@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>JAGO BACA - Belajar Membaca Interaktif</title>
+  
+  <!-- Meta PWA & Aksesibilitas Mobile -->
+  <meta name="theme-color" content="#118AB2">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BACA">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23118AB2'/><text x='50%' y='58%' font-size='240' font-weight='900' fill='%23FFD166' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'>BACA</text></svg>">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Fredoka & Nunito untuk Typography Anak yang Ramah & Sangat Legibel -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            fredoka: ['Fredoka', 'sans-serif'],
+            nunito: ['Nunito', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              yellow: '#FFD166',
+              pink: '#EF476F',
+              blue: '#118AB2',
+              green: '#06D6A0',
+              purple: '#8338EC',
+              dark: '#073B4C',
+              cream: '#FFFDF9'
+            }
+          },
+          boxShadow: {
+            'pop': '0 8px 0 0 rgba(0, 0, 0, 0.15)',
+            'pop-sm': '0 4px 0 0 rgba(0, 0, 0, 0.12)',
+            'pop-lg': '0 12px 0 0 rgba(0, 0, 0, 0.18)',
+            'inner-glow': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.6)'
+          },
+          keyframes: {
+            bounceSlow: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' }
+            },
+            pulseGlow: {
+              '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+              '50%': { transform: 'scale(1.06)', opacity: '0.85' }
+            },
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-3deg)' },
+              '50%': { transform: 'rotate(3deg)' }
+            },
+            popIn: {
+              '0%': { transform: 'scale(0.5)', opacity: '0' },
+              '70%': { transform: 'scale(1.15)' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            }
+          },
+          animation: {
+            'bounce-slow': 'bounceSlow 2.5s infinite ease-in-out',
+            'pulse-glow': 'pulseGlow 1.8s infinite ease-in-out',
+            'wiggle': 'wiggle 0.4s infinite ease-in-out',
+            'pop-in': 'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Styling Sentuhan & Aksesibilitas Anak */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Fredoka', cursive, sans-serif;
+      background-color: #FFFDF9;
+      color: #073B4C;
+      overflow: hidden;
+    }
+
+    /* Pattern Canvas Background Sederhana tanpa Gambar Berat */
+    .bg-pattern {
+      background-image: radial-gradient(#118AB2 0.75px, transparent 0.75px), radial-gradient(#FFD166 0.75px, #FFFDF9 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      opacity: 0.95;
+    }
+
+    /* Transition & Feedback Visual Kartu Huruf */
+    .letter-card {
+      transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
+      will-change: transform;
+    }
+
+    .letter-card:active {
+      transform: scale(0.92);
+    }
+
+    .dragging {
+      opacity: 0.85;
+      transform: scale(1.18) !important;
+      z-index: 9999 !important;
+      pointer-events: none;
+      filter: drop-shadow(0 15px 15px rgba(0,0,0,0.2));
+    }
+
+    .drop-zone-active {
+      border-color: #06D6A0 !important;
+      background-color: rgba(6, 214, 160, 0.1) !important;
+      transform: scale(1.02);
+    }
+
+    /* Scrollbar Sembunyi */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Safe Area Spacing untuk Mobile Notch */
+    .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
+    .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body class="h-full flex flex-col justify-between bg-pattern">
+
+  <div id="app" class="relative w-full h-full flex flex-col justify-between overflow-hidden">
+    
+    <!-- ========================================== -->
+    <!-- 1. HEADER BAR UTAMA (MINIMALIS & SENTUH TINGGI) -->
+    <!-- ========================================== -->
+    <header class="w-full px-4 pt-3 pb-2 flex items-center justify-between z-20 safe-top">
+      <!-- Logo Home Button -->
+      <button id="btn-home" onclick="App.showHome()" class="flex items-center gap-2 bg-white border-4 border-brand-blue/30 rounded-2xl px-3 py-1.5 shadow-pop-sm active:translate-y-1 transition-all">
+        <span class="text-2xl font-black text-brand-pink tracking-wider">JAGO BACA</span>
+        <span class="text-xs bg-brand-yellow px-2 py-0.5 rounded-full font-bold text-brand-dark hidden sm:inline-block">CEPAT</span>
+      </button>
+
+      <!-- Status Mode (Main Bebas / Dengarkan) -->
+      <div id="mode-badge" class="hidden sm:flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full border-2 border-brand-purple/20 shadow-sm">
+        <span id="mode-icon" class="text-xl">🎨</span>
+        <span id="mode-text" class="font-bold text-sm text-brand-purple">Main Bebas</span>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center gap-2">
+        <!-- Offline / Online Status Badge -->
+        <div id="offline-status-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-green-100 border border-green-400 text-green-700 text-xs font-bold rounded-full">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span id="status-text">Offline Ready</span>
+        </div>
+
+        <!-- Audio Toggle Button -->
+        <button id="btn-audio-toggle" onclick="AudioEngine.toggleAudio()" aria-label="Suara" class="w-12 h-12 bg-white border-4 border-brand-yellow rounded-2xl flex items-center justify-center text-2xl shadow-pop-sm active:translate-y-1 transition-all">
+          <span id="audio-icon">🔊</span>
+        </button>
+
+        <!-- Case Switcher Toggle (A / a) -->
+        <button id="btn-case-toggle" onclick="App.toggleLetterCase()" aria-label="Besar Kecil" class="h-12 px-3 bg-white border-4 border-brand-green rounded-2xl flex items-center justify-center font-black text-lg text-brand-dark shadow-pop-sm active:translate-y-1 transition-all">
+          <span id="case-text">Aa</span>
+        </button>
+
+        <!-- Parent Settings Gear Button (Membutuhkan Press 2.5 Detik) -->
+        <!-- Parent Settings Gear Button (Menggunakan PointerEvents yang stabil untuk tahan 2 detik) -->
+        <div class="relative">
+          <button id="btn-parent-gear" 
+                  onpointerdown="ParentsMode.startHold(event)" 
+                  onpointerup="ParentsMode.cancelHold()" 
+                  onpointerleave="ParentsMode.cancelHold()"
+                  onpointercancel="ParentsMode.cancelHold()"
+                  aria-label="Pengaturan Orang Tua" 
+                  class="w-12 h-12 bg-white border-4 border-brand-purple rounded-2xl flex items-center justify-center text-xl shadow-pop-sm active:translate-y-1 transition-all relative overflow-hidden">
+            ⚙️
+            <!-- Progress Overlay saat Ditahan -->
+            <div id="hold-progress" class="absolute bottom-0 left-0 right-0 bg-brand-purple/30 w-full h-0"></div>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 2. LAYAR UTAMA GAME & EKSPLORASI HURUF -->
+    <!-- ========================================== -->
+    <main id="main-content" class="relative flex-1 w-full flex flex-col justify-between items-center px-3 py-1 z-10">
+      
+      <!-- MODE DENGARKAN PROMPT BANNER (Hidden by default) -->
+      <div id="dengarkan-banner" class="hidden w-full max-w-md bg-white border-4 border-brand-pink rounded-3xl p-3 shadow-pop text-center mb-2 animate-pop-in">
+        <div class="flex items-center justify-between gap-2">
+          <button onclick="DengarkanMode.playTargetAudio()" class="w-12 h-12 bg-brand-pink text-white rounded-2xl flex items-center justify-center text-2xl shadow-pop-sm active:scale-95">
+            🔊
+          </button>
+          <div class="flex-1">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Susun Kata Ini:</p>
+            <p id="target-word-display" class="text-2xl font-black text-brand-dark tracking-widest">?</p>
+          </div>
+          <button onclick="DengarkanMode.nextWord()" class="px-3 py-2 bg-brand-yellow text-brand-dark rounded-xl font-bold text-xs shadow-pop-sm">
+            Ganti ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- AREA TENGAH / ASSEMBLY BOARD (Drop Zone) -->
+      <section id="assembly-area" class="w-full max-w-2xl flex-1 max-h-[45vh] my-auto bg-white/85 border-4 border-dashed border-brand-blue/40 rounded-3xl p-4 flex flex-col items-center justify-center shadow-inner relative transition-all duration-300">
+        
+        <!-- Placeholder Visual saat Area Kosong -->
+        <div id="empty-hint" class="flex flex-col items-center justify-center text-center text-gray-400 pointer-events-none transition-opacity duration-300">
+          <div class="text-4xl mb-2 animate-bounce-slow">👆</div>
+          <p class="font-bold text-base sm:text-lg text-brand-dark/60">Sentuh huruf di bawah untuk menyusun!</p>
+          <p class="text-xs text-gray-400 mt-1">A B C D E F G</p>
+        </div>
+
+        <!-- Assembled Letters Container -->
+        <div id="assembled-letters" class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full min-h-[90px] z-10">
+          <!-- Kartu Huruf Tersusun Muncul di Sini via JS -->
+        </div>
+
+        <!-- Formed Word Badge & Audio Action -->
+        <div id="word-result-bar" class="hidden mt-3 flex items-center gap-3 bg-brand-yellow/30 border-2 border-brand-yellow px-4 py-2 rounded-2xl animate-pop-in">
+          <span id="word-result-text" class="text-2xl sm:text-3xl font-black text-brand-dark tracking-widest"></span>
+          <!-- Tombol Speaker Utama Baca Kata -->
+          <button id="btn-speak-word" onclick="App.speakAssembledWord()" class="w-12 h-12 bg-brand-green text-white rounded-2xl flex items-center justify-center text-2xl shadow-pop active:scale-90 transition-all">
+            🔊
+          </button>
+        </div>
+
+        <!-- Tombol Reset / Clear Susunan (↺) -->
+        <button id="btn-reset" onclick="App.clearAssembled()" aria-label="Hapus Susunan" class="absolute bottom-2 right-2 w-11 h-11 bg-brand-pink/10 hover:bg-brand-pink/20 text-brand-pink rounded-xl flex items-center justify-center text-2xl font-black transition-all border border-brand-pink/30 active:scale-90">
+          ↺
+        </button>
+
+        <!-- Mode Match Indicator (Untuk Cocokkan Huruf Besar - Kecil) -->
+        <!-- Removed match indicator -->
+      </section>
+
+      <!-- ========================================== -->
+      <!-- 3. TRAY HURUF DINGIN (ALFABET BOARD) -->
+      <!-- ========================================== -->
+      <section class="w-full max-w-4xl mt-2 safe-bottom">
+        
+        <!-- Mode Switch Tabs Sederhana -->
+        <div class="flex items-center justify-between mb-2 px-1">
+          <div class="flex items-center gap-1.5">
+            <button onclick="App.switchMode('free')" id="tab-free" class="px-3 py-1 rounded-xl font-bold text-xs bg-brand-purple text-white shadow-sm transition-all">
+              🎨 Main Bebas
+            </button>
+            <button onclick="App.switchMode('listen')" id="tab-listen" class="px-3 py-1 rounded-xl font-bold text-xs bg-white text-brand-dark border border-gray-200 shadow-sm transition-all">
+              👂 Dengarkan
+            </button>
+          </div>
+          
+          <button onclick="App.shuffleLetters()" class="text-xs font-bold text-brand-blue bg-white border border-brand-blue/30 px-2.5 py-1 rounded-xl active:scale-95">
+            🔀 Acak
+          </button>
+        </div>
+
+        <!-- Horizontal Scrollable Container Huruf dengan Target Sentuh Besar -->
+        <div id="letter-dock" class="w-full bg-white/90 border-4 border-brand-yellow/60 rounded-3xl p-3 shadow-pop flex flex-wrap justify-center items-center gap-2 max-h-[38vh] overflow-y-auto no-scrollbar">
+          <!-- Huruf Alfabet di-generate oleh JS -->
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 4. HOMEPAGE SCREEN OVERLAY (START SCREEN) -->
+    <!-- ========================================== -->
+    <div id="home-screen" class="absolute inset-0 bg-brand-cream z-50 flex flex-col items-center justify-between p-6 text-center transition-all duration-500">
+      
+      <!-- Top Decorative Shapes -->
+      <div class="w-full flex justify-between items-center max-w-md safe-top">
+        <div class="w-12 h-12 bg-brand-yellow rounded-2xl transform -rotate-12 flex items-center justify-center text-xl font-black">A</div>
+        <div class="w-10 h-10 bg-brand-pink rounded-full transform rotate-12 flex items-center justify-center text-lg font-black text-white">b</div>
+        <div class="w-12 h-12 bg-brand-green rounded-2xl transform rotate-4 flex items-center justify-center text-xl font-black text-white">C</div>
+      </div>
+
+      <!-- Main Logo & Title -->
+      <div class="my-auto flex flex-col items-center">
+        <div class="relative mb-4">
+          <h1 class="text-7xl sm:text-8xl font-black text-brand-blue tracking-wider drop-shadow-lg flex items-center justify-center gap-1">
+            <span class="inline-block animate-bounce-slow text-brand-pink" style="animation-delay: 0s">B</span>
+            <span class="inline-block animate-bounce-slow text-brand-yellow" style="animation-delay: 0.2s">A</span>
+            <span class="inline-block animate-bounce-slow text-brand-green" style="animation-delay: 0.4s">C</span>
+            <span class="inline-block animate-bounce-slow text-brand-purple" style="animation-delay: 0.6s">A</span>
+          </h1>
+          <p class="text-base sm:text-lg font-bold text-brand-dark/70 mt-2">Jago Membaca Cepat Bahasa Indonesia</p>
+        </div>
+
+        <!-- Tombol Besar MULAI -->
+        <button onclick="App.startApp()" class="group relative inline-flex items-center justify-center px-10 py-5 text-3xl font-black text-white bg-brand-green border-4 border-white rounded-3xl shadow-pop-lg active:translate-y-2 transition-all duration-150 animate-pulse-glow">
+          <span class="mr-3 text-4xl">▶</span> MULAI
+        </button>
+
+        <p class="text-xs text-gray-400 mt-6 font-semibold">Tanpa Akun • Tanpa Level • Langsung Main!</p>
+      </div>
+
+      <!-- Bottom Credits / Parent Settings Entry -->
+      <div class="w-full max-w-md flex justify-between items-center safe-bottom text-xs font-bold text-gray-400">
+        <span>Aplikasi Anak Usia Dini</span>
+        <button onclick="ParentsMode.openSettingsDirectly()" class="text-brand-purple underline">Pengaturan Orang Tua</button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5. PARENT SETTINGS MODAL (PENGATURAN ORANG TUA) -->
+    <!-- ========================================== -->
+    <div id="modal-parents" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-lg rounded-3xl border-4 border-brand-purple p-6 max-h-[90vh] overflow-y-auto shadow-pop-lg relative">
+        
+        <!-- Header Modal -->
+        <div class="flex items-center justify-between pb-4 border-b-2 border-gray-100 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">⚙️</span>
+            <h2 class="text-xl font-black text-brand-dark">Pengaturan & Informasi Orang Tua</h2>
+          </div>
+          <button onclick="ParentsMode.closeModal()" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-lg flex items-center justify-center">✕</button>
+        </div>
+
+        <!-- Body Form Pengaturan -->
+        <div class="space-y-4 text-sm font-bold text-brand-dark">
+          
+          <!-- Nama Anak -->
+          <div>
+            <label class="block text-gray-600 mb-1">Nama Anak:</label>
+            <input type="text" id="setting-child-name" placeholder="Contoh: Budi" class="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-2 font-bold focus:border-brand-purple outline-none">
+          </div>
+
+          <!-- Kecepatan Audio Phonics -->
+          <div>
+            <div class="flex justify-between text-gray-600 mb-1">
+              <label>Kecepatan Suara Bacaan:</label>
+              <span id="rate-val-display" class="text-brand-purple">0.85x</span>
+            </div>
+            <input type="range" id="setting-speech-rate" min="0.5" max="1.2" step="0.05" value="0.85" oninput="ParentsMode.updateRateLabel(this.value)" class="w-full accent-brand-purple cursor-pointer">
+          </div>
+
+          <!-- Ukuran Font Cards -->
+          <div>
+            <label class="block text-gray-600 mb-1">Ukuran Kartu Huruf:</label>
+            <select id="setting-card-size" class="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-2 font-bold focus:border-brand-purple outline-none">
+              <option value="normal">Normal (Standar Tablet/HP)</option>
+              <option value="large">Sangat Besar (Untuk Jari Kecil)</option>
+            </select>
+          </div>
+
+          <!-- Ringkasan Statistik Belajar Sederhana -->
+          <div class="bg-brand-cream border-2 border-brand-yellow p-4 rounded-2xl">
+            <h3 class="font-black text-brand-dark mb-2 flex items-center gap-2">
+              📊 Perkembangan Belajar Anak
+            </h3>
+            <div class="grid grid-cols-2 gap-2 text-center">
+              <div class="bg-white p-2 rounded-xl border border-brand-yellow/50">
+                <span class="block text-xl font-black text-brand-blue" id="stat-total-touches">0</span>
+                <span class="text-xs text-gray-500">Huruf Disentuh</span>
+              </div>
+              <div class="bg-white p-2 rounded-xl border border-brand-yellow/50">
+                <span class="block text-xl font-black text-brand-green" id="stat-words-formed">0</span>
+                <span class="text-xs text-gray-500">Kata Terbentuk</span>
+              </div>
+            </div>
+            
+            <!-- Tombol Install PWA untuk Orang Tua jika Browser Mengizinkan -->
+            <div id="pwa-install-container" class="hidden mt-3 pt-2 border-t border-brand-yellow/30 text-center">
+              <button id="btn-pwa-install" onclick="OfflineEngine.installPWA()" class="w-full py-2 bg-brand-blue text-white rounded-xl text-xs font-black shadow-pop-sm">
+                📲 Pasang Aplikasi di HP/Tablet (Bisa Tanpa Kuota)
+              </button>
+            </div>
+            
+            <p class="text-[11px] text-gray-400 mt-2 text-center">*Data disimpan di browser tanpa akun & siap digunakan offline.</p>
+          </div>
+
+          <!-- Data Kata Terbentuk -->
+          <div>
+            <label class="block text-gray-600 mb-1">Kata Yang Sering Disusun:</label>
+            <div id="stat-word-list" class="flex flex-wrap gap-1 bg-gray-50 p-3 rounded-2xl min-h-[50px] text-xs text-gray-500">
+              Belum ada kata tersusun.
+            </div>
+          </div>
+
+          <!-- Reset Progress Button -->
+          <div class="pt-2">
+            <button onclick="ParentsMode.resetProgress()" class="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl font-bold hover:bg-red-100 transition-all">
+              🗑️ Reset Data Perkembangan
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Save Button -->
+        <div class="mt-6">
+          <button onclick="ParentsMode.saveSettings()" class="w-full py-3 bg-brand-purple text-white rounded-2xl font-black text-base shadow-pop active:scale-95 transition-all">
+            Simpan & Kembali Bermain
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ===================================================================
+       1. WEB AUDIO SYNTHESIZER ENGINE (SFX Lembut Tanpa Asset MP3 External)
+       =================================================================== */
+    const AudioEngine = {
+      ctx: null,
+      audioEnabled: true,
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        // Load preference
+        const savedAudio = localStorage.getItem('baca_audio_enabled');
+        if (savedAudio !== null) {
+          this.audioEnabled = JSON.parse(savedAudio);
+        }
+        this.updateUI();
+      },
+
+      toggleAudio() {
+        this.audioEnabled = !this.audioEnabled;
+        localStorage.setItem('baca_audio_enabled', JSON.stringify(this.audioEnabled));
+        this.updateUI();
+        if (this.audioEnabled) this.playPop();
+      },
+
+      updateUI() {
+        const icon = document.getElementById('audio-icon');
+        if (icon) icon.innerText = this.audioEnabled ? '🔊' : '🔇';
+      },
+
+      // SFX Tap Pop
+      playPop() {
+        if (!this.audioEnabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.08);
+        } catch (e) {}
+      },
+
+      // SFX Snap In Area
+      playSnap() {
+        if (!this.audioEnabled) return;
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+          osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.12); // E5
+          gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.12);
+        } catch (e) {}
+      },
+
+      // SFX Chime Kemenangan Kata
+      playSuccessChime() {
+        if (!this.audioEnabled) return;
+        try {
+          this.init();
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.09);
+            gain.gain.setValueAtTime(0.3, this.ctx.currentTime + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.09 + 0.2);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(this.ctx.currentTime + idx * 0.09);
+            osc.stop(this.ctx.currentTime + idx * 0.09 + 0.2);
+          });
+        } catch (e) {}
+      }
+    };
+
+    /* ===================================================================
+       2. PHONICS & SPEECH SYNTHESIS ENGINE (Indonesian Web Speech)
+       =================================================================== */
+    const PhonicsEngine = {
+      synth: window.speechSynthesis,
+      
+      // Map Bunyi Phonics Huruf Bahasa Indonesia
+      phonicsMap: {
+        'A': 'a', 'B': 'b', 'C': 'ce', 'D': 'd', 'E': 'e', 
+        'F': 'ef', 'G': 'ge', 'H': 'ha', 'I': 'i', 'J': 'je', 
+        'K': 'ka', 'L': 'el', 'M': 'em', 'N': 'en', 'O': 'o', 
+        'P': 'p', 'Q': 'kiu', 'R': 'er', 'S': 'es', 'T': 'te', 
+        'U': 'u', 'V': 've', 'W': 'w', 'X': 'eks', 'Y': 'ye', 'Z': 'zet'
+      },
+
+      speakLetter(letter) {
+        if (!AudioEngine.audioEnabled) return;
+        if (!this.synth) return;
+
+        this.synth.cancel(); // Stop pending speech
+        const upper = letter.toUpperCase();
+        const textToSpeak = this.phonicsMap[upper] || letter;
+        
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'id-ID';
+        utterance.rate = parseFloat(localStorage.getItem('baca_speech_rate')) || 0.85;
+        utterance.pitch = 1.1; // Suara sedikit lebih tinggi & ramah anak
+
+        this.synth.speak(utterance);
+      },
+
+      speakWord(word) {
+        if (!AudioEngine.audioEnabled) return;
+        if (!this.synth) return;
+
+        this.synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(word.toLowerCase());
+        utterance.lang = 'id-ID';
+        utterance.rate = parseFloat(localStorage.getItem('baca_speech_rate')) || 0.85;
+        utterance.pitch = 1.05;
+
+        this.synth.speak(utterance);
+      }
+    };
+
+    /* ===================================================================
+       3. INDONESIAN WORD DATABASE (Database Kata Ramah Anak)
+       =================================================================== */
+    const WordDatabase = {
+      // Database ratusan kata umum 2-5 huruf
+      words: [
+        // 2 Huruf / Suku kata
+        "BA", "BI", "BU", "BE", "BO", "CA", "CI", "CU", "CE", "CO",
+        "DA", "DI", "DU", "DE", "DO", "GA", "GI", "GU", "GE", "GO",
+        "MA", "MI", "MU", "ME", "MO", "PA", "PI", "PU", "PE", "PO",
+        "YA", "YU", "KE", "DI", "NI", "LI", "SI", "LA", "SA", "TA",
+
+        // 3 Huruf
+        "IBU", "APA", "ADA", "AYO", "UBI", "AKU", "BAN", "CAT", "BUS", 
+        "JAM", "TAS", "ES", "AIR", "API", "GUM", "TEH", "BEL",
+
+
+        // 5 Huruf
+        "BEBEK", "KUCING", "RUMAH", "MOBIL", "GAJAH", "HUJAN", "POHON", 
+        "TAWA", "BOTOL", "BULAN", "MACAN", "TAMAN", "DAUN", "BUNGA", "KERETA", "SEPEDA", "KAPAL", "PESAWAT", "IKAN", "KAMBING", "AYAM", "KUDA", "SAPI", "KELINCI", "TIKUS", "BURUNG", "KATAK", "ULAR", "LEBAH", "SEMUT", "LALAT", "JERUK", "APEL", "MANGGA", "PISANG", "SALAK", "MELON", "NASI", "ROTI", "SUSU", "KEJU", "KURSI", "MEJA", "PINTU", "SEPATU", "BAJU", "TOPI", "KAOS", "CELANA", "KASUR", "BANTAL", "LAMPU", "KIPAS", "KOMPOR", "SENDOK", "PIRING", "GELAS", "SAPU", "EMBER", "KUNCI", "JAMBU", "NANAS", "PEPAYA", "DURIAN", "ANGGUR", "SEMANGKA", "KELAPA", "TOMAT", "WORTEL", "JAGUNG", "KENTANG", "TELUR", "DAGING", "IKAN", "UDANG", "CACING", "KUPU", "NYAMUK", "JANGKRIK", "BELALANG", "KEPITING", "KERBAU", "RUSA", "ZEBRA", "HARIMAU", "SINGA", "MONYET", "GORILA", "PANDA", "KOALA", "GAJAH", "KUCING", "BADAK", "BUAYA", "MAMA", "PAPA", "BUKU", "BOLA", "SAPI", "KAKI", "MATA", "ROTI", 
+        "NASI", "KUDA", "BAJU", "TOPI", "MEJA", "BUKA", "BACA", "TALI", 
+        "BUMI", "NAMA", "PIPA", "GIGI", "JARI", "DASI", "KAOS", "LARI", 
+        "CUCI", "LUAR", "DUA", "TIGA", "LIMA", "SATU", "KOTA", "KAYU",
+        "PENA", "PAGI", "SULI", "KATA", "BARU", "SAYA", "KAMU", "KITA",
+      ],
+
+      isKnownWord(str) {
+        return this.words.includes(str.toUpperCase());
+      },
+
+      getRandomWord() {
+        const simpleWords = this.words.filter(w => w.length >= 3 && w.length <= 4);
+        return simpleWords[Math.floor(Math.random() * simpleWords.length)];
+      }
+    };
+
+    /* ===================================================================
+       4. APP MAIN CONTROLLER & STATE MANAGEMENT
+       =================================================================== */
+    const App = {
+      currentCase: 'uppercase', // 'uppercase' | 'lowercase'
+      currentMode: 'free', // 'free' | 'listen' | 'match'
+      assembledLetters: [], // Array of letter strings
+      alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+      stats: {
+        totalTouches: 0,
+        wordsFormed: 0,
+        formedWordList: {}
+      },
+
+      init() {
+        AudioEngine.init();
+        this.loadStats();
+        this.renderLetters();
+        this.setupDragAndDrop();
+        this.checkIdleHint();
+      },
+
+      startApp() {
+        AudioEngine.playPop();
+        document.getElementById('home-screen').classList.add('translate-y-full', 'opacity-0');
+        setTimeout(() => {
+          document.getElementById('home-screen').style.display = 'none';
+        }, 500);
+      },
+
+      showHome() {
+        AudioEngine.playPop();
+        const home = document.getElementById('home-screen');
+        home.style.display = 'flex';
+        setTimeout(() => {
+          home.classList.remove('translate-y-full', 'opacity-0');
+        }, 10);
+      },
+
+      toggleLetterCase() {
+        AudioEngine.playPop();
+        this.currentCase = this.currentCase === 'uppercase' ? 'lowercase' : 'uppercase';
+        document.getElementById('case-text').innerText = this.currentCase === 'uppercase' ? 'Aa' : 'aA';
+        this.renderLetters();
+      },
+
+      switchMode(mode) {
+        AudioEngine.playPop();
+        this.currentMode = mode;
+        
+        // Update tab styles
+        ['free', 'listen'].forEach(m => {
+          const tab = document.getElementById(`tab-${m}`);
+          if (tab) {
+            if (m === mode) {
+              tab.className = "px-3 py-1 rounded-xl font-bold text-xs bg-brand-purple text-white shadow-sm transition-all";
+            } else {
+              tab.className = "px-3 py-1 rounded-xl font-bold text-xs bg-white text-brand-dark border border-gray-200 shadow-sm transition-all";
+            }
+          }
+        });
+
+        const dengarkanBanner = document.getElementById('dengarkan-banner');
+        const modeText = document.getElementById('mode-text');
+        const modeIcon = document.getElementById('mode-icon');
+
+        if (mode === 'listen') {
+          if (dengarkanBanner) dengarkanBanner.classList.remove('hidden');
+          if (modeText) modeText.innerText = 'Mode Dengarkan';
+          if (modeIcon) modeIcon.innerText = '👂';
+          DengarkanMode.init();
+        } else {
+          if (dengarkanBanner) dengarkanBanner.classList.add('hidden');
+          if (modeText) modeText.innerText = 'Main Bebas';
+          if (modeIcon) modeIcon.innerText = '🎨';
+          this.renderLetters();
+        }
+      },
+
+      renderLetters() {
+        const container = document.getElementById('letter-dock');
+        container.innerHTML = '';
+
+        // Highlight Vowels (A, I, U, E, O) with warm colors
+        const vowels = ['A', 'I', 'U', 'E', 'O'];
+
+        this.alphabet.forEach((char, index) => {
+          const isVowel = vowels.includes(char);
+          const displayChar = this.currentCase === 'uppercase' ? char : char.toLowerCase();
+          
+          const card = document.createElement('div');
+          card.className = `letter-card w-12 h-14 sm:w-14 sm:h-16 border-4 ${
+            isVowel ? 'bg-brand-yellow border-amber-400 text-brand-dark' : 'bg-white border-brand-blue/30 text-brand-blue'
+          } rounded-2xl flex items-center justify-center font-black text-2xl sm:text-3xl shadow-pop-sm cursor-pointer select-none`;
+          
+          card.innerText = displayChar;
+          card.dataset.letter = displayChar;
+          
+          // Tap to add letter
+          card.addEventListener('click', () => {
+            this.handleLetterTap(displayChar);
+          });
+
+          container.appendChild(card);
+        });
+      },
+
+      shuffleLetters() {
+        AudioEngine.playPop();
+        this.alphabet.sort(() => Math.random() - 0.5);
+        this.renderLetters();
+      },
+
+      handleLetterTap(letter) {
+        AudioEngine.playSnap();
+        PhonicsEngine.speakLetter(letter);
+
+        // Track touch stats
+        this.stats.totalTouches++;
+        this.saveStats();
+
+        // Add to assembly area
+        this.assembledLetters.push(letter);
+        this.updateAssemblyUI();
+      },
+
+      clearAssembled() {
+        if (this.assembledLetters.length > 0) AudioEngine.playPop();
+        this.assembledLetters = [];
+        this.updateAssemblyUI();
+      },
+
+      updateAssemblyUI() {
+        const container = document.getElementById('assembled-letters');
+        const emptyHint = document.getElementById('empty-hint');
+        const wordResultBar = document.getElementById('word-result-bar');
+        const wordResultText = document.getElementById('word-result-text');
+
+        container.innerHTML = '';
+
+        if (this.assembledLetters.length === 0) {
+          emptyHint.style.display = 'flex';
+          wordResultBar.classList.add('hidden');
+          return;
+        }
+
+        emptyHint.style.display = 'none';
+
+        // Render Cards in Assembly Area
+        this.assembledLetters.forEach((letter, index) => {
+          const card = document.createElement('div');
+          card.className = 'letter-card w-14 h-16 sm:w-16 sm:h-20 bg-white border-4 border-brand-purple rounded-2xl flex items-center justify-center font-black text-3xl sm:text-4xl text-brand-purple shadow-pop cursor-pointer animate-pop-in relative group';
+          card.innerText = letter;
+
+          // Badged button to remove individual letter
+          const removeBtn = document.createElement('span');
+          removeBtn.className = 'absolute -top-2 -right-2 w-6 h-6 bg-brand-pink text-white text-xs rounded-full flex items-center justify-center font-bold shadow-sm';
+          removeBtn.innerText = '✕';
+          card.appendChild(removeBtn);
+
+          card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.removeLetterAt(index);
+          });
+
+          container.appendChild(card);
+        });
+
+        const currentWord = this.assembledLetters.join('').toUpperCase();
+
+        // Auto Word & Syllable Recognition
+        if (currentWord.length >= 2) {
+          wordResultBar.classList.remove('hidden');
+          wordResultText.innerText = currentWord;
+
+          const isKnown = WordDatabase.isKnownWord(currentWord);
+
+          if (isKnown) {
+            AudioEngine.playSuccessChime();
+            PhonicsEngine.speakWord(currentWord);
+
+            // Save formed word stat
+            this.stats.wordsFormed++;
+            this.stats.formedWordList[currentWord] = (this.stats.formedWordList[currentWord] || 0) + 1;
+            this.saveStats();
+
+            // Trigger Dengarkan mode validation if active
+            if (this.currentMode === 'listen') {
+              DengarkanMode.checkAnswer(currentWord);
+            }
+          }
+        } else {
+          wordResultBar.classList.add('hidden');
+        }
+      },
+
+      speakAssembledWord() {
+        const word = this.assembledLetters.join('');
+        if (word.length > 0) {
+          PhonicsEngine.speakWord(word);
+        }
+      },
+
+      checkMatchingPair() {
+        const [l1, l2] = this.assembledLetters;
+        if (l1.toLowerCase() === l2.toLowerCase() && l1 !== l2) {
+          // Success Match!
+          AudioEngine.playSuccessChime();
+          const feedback = document.getElementById('match-feedback');
+          feedback.classList.remove('hidden');
+          setTimeout(() => {
+            feedback.classList.add('hidden');
+            this.clearAssembled();
+          }, 1500);
+        } else {
+          // Soft reset on mismatch
+          setTimeout(() => {
+            this.clearAssembled();
+          }, 1000);
+        }
+      },
+
+      setupDragAndDrop() {
+        // Interaksi difokuskan 100% pada SENTUHAN (TAP) langsung agar anak tidak kesulitan menggeser huruf.
+      },
+
+      checkIdleHint() {
+        // Visual cue hint jika anak diam selama 8 detik
+        let idleTimer;
+        const resetTimer = () => {
+          clearTimeout(idleTimer);
+          idleTimer = setTimeout(() => {
+            const firstCard = document.querySelector('#letter-dock .letter-card');
+            if (firstCard) {
+              firstCard.classList.add('animate-wiggle');
+              setTimeout(() => firstCard.classList.remove('animate-wiggle'), 1200);
+            }
+          }, 8000);
+        };
+
+        window.addEventListener('pointerdown', resetTimer);
+        resetTimer();
+      },
+
+      loadStats() {
+        const saved = localStorage.getItem('baca_stats');
+        if (saved) {
+          try { this.stats = JSON.parse(saved); } catch (e) {}
+        }
+      },
+
+      saveStats() {
+        localStorage.setItem('baca_stats', JSON.stringify(this.stats));
+      }
+    };
+
+    /* ===================================================================
+       5. MODE "DENGARKAN" (Audio Challenge Mode)
+       =================================================================== */
+    const DengarkanMode = {
+      targetWord: '',
+
+      init() {
+        this.nextWord();
+      },
+
+      nextWord() {
+        this.targetWord = WordDatabase.getRandomWord();
+        document.getElementById('target-word-display').innerText = this.targetWord;
+        App.clearAssembled();
+        this.playTargetAudio();
+      },
+
+      playTargetAudio() {
+        PhonicsEngine.speakWord(this.targetWord);
+      },
+
+      checkAnswer(userWord) {
+        if (userWord === this.targetWord) {
+          AudioEngine.playSuccessChime();
+          setTimeout(() => {
+            this.nextWord();
+          }, 1500);
+        }
+      }
+    };
+
+    /* ===================================================================
+       6. PARENT SETTINGS & SECURITY GATE (Tekan 2.5s)
+       =================================================================== */
+    const ParentsMode = {
+      holdTimer: null,
+
+      startHold(e) {
+        if (e) e.preventDefault();
+        this.cancelHold();
+        
+        const progressEl = document.getElementById('hold-progress');
+        if (progressEl) {
+          progressEl.style.transition = 'height 2s linear';
+          progressEl.style.height = '100%';
+        }
+
+        this.holdTimer = setTimeout(() => {
+          this.openModal();
+          this.cancelHold();
+        }, 2000); // Tahan 2 Detik
+      },
+
+      cancelHold() {
+        if (this.holdTimer) {
+          clearTimeout(this.holdTimer);
+          this.holdTimer = null;
+        }
+        const progressEl = document.getElementById('hold-progress');
+        if (progressEl) {
+          progressEl.style.transition = 'height 0.1s ease-out';
+          progressEl.style.height = '0%';
+        }
+      },
+
+      openModal() {
+        AudioEngine.playPop();
+        // Load parent stats & form settings
+        document.getElementById('stat-total-touches').innerText = App.stats.totalTouches;
+        document.getElementById('stat-words-formed').innerText = App.stats.wordsFormed;
+
+        const listContainer = document.getElementById('stat-word-list');
+        const words = Object.keys(App.stats.formedWordList);
+        if (words.length > 0) {
+          listContainer.innerHTML = words.map(w => 
+            `<span class="bg-white border border-brand-purple/30 text-brand-purple px-2 py-1 rounded-lg">${w} (${App.stats.formedWordList[w]}x)</span>`
+          ).join('');
+        } else {
+          listContainer.innerText = 'Belum ada kata tersusun.';
+        }
+
+        document.getElementById('modal-parents').classList.remove('hidden');
+      },
+
+      openSettingsDirectly() {
+        this.openModal();
+      },
+
+      closeModal() {
+        AudioEngine.playPop();
+        document.getElementById('modal-parents').classList.add('hidden');
+      },
+
+      updateRateLabel(val) {
+        document.getElementById('rate-val-display').innerText = val + 'x';
+      },
+
+      saveSettings() {
+        AudioEngine.playPop();
+        const speechRate = document.getElementById('setting-speech-rate').value;
+        localStorage.setItem('baca_speech_rate', speechRate);
+
+        const childName = document.getElementById('setting-child-name').value;
+        if (childName) localStorage.setItem('baca_child_name', childName);
+
+        this.closeModal();
+      },
+
+      resetProgress() {
+        App.stats = { totalTouches: 0, wordsFormed: 0, formedWordList: {} };
+        App.saveStats();
+        this.openModal();
+      }
+    };
+
+    // Initialize App on DOM Ready
+    window.addEventListener('DOMContentLoaded', () => {
+      App.init();
+      OfflineEngine.init();
+    });
+
+    /* ===================================================================
+       7. OFFLINE ENGINE & SERVICE WORKER GENERATOR (PWA Self-Contained)
+       =================================================================== */
+    const OfflineEngine = {
+      deferredPrompt: null,
+
+      init() {
+        this.generateManifest();
+        this.registerServiceWorker();
+        this.setupNetworkListeners();
+      },
+
+      generateManifest() {
+        if (!document.querySelector('link[rel="manifest"]')) {
+          const link = document.createElement('link');
+          link.rel = 'manifest';
+          link.href = 'manifest.json';
+          document.head.appendChild(link);
+        }
+      },
+
+      registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('./sw.js')
+            .then((reg) => console.log('SW Registered:', reg.scope))
+            .catch((err) => console.log('SW Note:', err));
+        }
+      },
+
+      setupNetworkListeners() {
+        const updateBadge = () => {
+          const badge = document.getElementById('offline-status-badge');
+          const statusText = document.getElementById('status-text');
+          if (!badge || !statusText) return;
+
+          badge.classList.remove('hidden');
+          if (navigator.onLine) {
+            statusText.innerText = 'Online (Cached)';
+            badge.className = "hidden sm:flex items-center gap-1.5 px-3 py-1 bg-green-100 border border-green-400 text-green-700 text-xs font-bold rounded-full";
+          } else {
+            statusText.innerText = 'Modus Offline Active';
+            badge.className = "flex items-center gap-1.5 px-3 py-1 bg-amber-100 border border-amber-400 text-amber-800 text-xs font-bold rounded-full";
+          }
+        };
+
+        window.addEventListener('online', updateBadge);
+        window.addEventListener('offline', updateBadge);
+        updateBadge();
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          this.deferredPrompt = e;
+          const container = document.getElementById('pwa-install-container');
+          if (container) container.classList.remove('hidden');
+        });
+      },
+
+      installPWA() {
+        if (this.deferredPrompt) {
+          this.deferredPrompt.prompt();
+          this.deferredPrompt.userChoice.then((choice) => {
+            if (choice.outcome === 'accepted') {
+              const container = document.getElementById('pwa-install-container');
+              if (container) container.classList.add('hidden');
+            }
+            this.deferredPrompt = null;
+          });
+        }
+      }
+    };
+  </script>
+</body>
+</html>

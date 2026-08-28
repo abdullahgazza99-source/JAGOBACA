@@ -17,7 +17,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Google Fonts: Fredoka & Nunito untuk Typography Anak yang Ramah & Sangat Legibel -->
+  <!-- Google Fonts: Fredoka & Nunito -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
@@ -78,7 +78,6 @@
   </script>
 
   <style>
-    /* Styling Sentuhan & Aksesibilitas Anak */
     * {
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
@@ -92,7 +91,6 @@
       overflow: hidden;
     }
 
-    /* Pattern Canvas Background Sederhana tanpa Gambar Berat */
     .bg-pattern {
       background-image: radial-gradient(#118AB2 0.75px, transparent 0.75px), radial-gradient(#FFD166 0.75px, #FFFDF9 0.75px);
       background-size: 30px 30px;
@@ -100,7 +98,6 @@
       opacity: 0.95;
     }
 
-    /* Transition & Feedback Visual Kartu Huruf */
     .letter-card {
       transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s ease;
       will-change: transform;
@@ -110,21 +107,6 @@
       transform: scale(0.92);
     }
 
-    .dragging {
-      opacity: 0.85;
-      transform: scale(1.18) !important;
-      z-index: 9999 !important;
-      pointer-events: none;
-      filter: drop-shadow(0 15px 15px rgba(0,0,0,0.2));
-    }
-
-    .drop-zone-active {
-      border-color: #06D6A0 !important;
-      background-color: rgba(6, 214, 160, 0.1) !important;
-      transform: scale(1.02);
-    }
-
-    /* Scrollbar Sembunyi */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -133,26 +115,46 @@
       scrollbar-width: none;
     }
 
-    /* Safe Area Spacing untuk Mobile Notch */
     .safe-top { padding-top: max(1rem, env(safe-area-inset-top)); }
     .safe-bottom { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
   </style>
 </head>
 <body class="h-full flex flex-col justify-between bg-pattern">
+  
+  <!-- UI POPUP INSTALL APLIKASI -->
+  <div id="pwa-install-popup" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 w-[92%] max-w-md bg-white border-4 border-brand-pink rounded-3xl p-4 shadow-pop-lg z-[9999] flex items-center justify-between gap-3 animate-pop-in">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 bg-red-100 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">
+        📲
+      </div>
+      <div>
+        <strong class="block font-black text-brand-dark text-sm sm:text-base leading-tight">Install Aplikasi</strong>
+        <span class="text-xs text-gray-500 font-semibold">Pasang sekarang untuk akses lebih cepat.</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <button id="pwa-install-btn" onclick="OfflineEngine.installPWA()" class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black text-xs sm:text-sm px-3.5 py-2.5 rounded-2xl shadow-pop-sm transition-all flex items-center gap-1">
+        Yuk install sekarang 😊
+      </button>
+      <button id="pwa-close-btn" onclick="OfflineEngine.closePopup()" aria-label="Tutup" class="w-8 h-8 text-gray-400 hover:text-gray-600 font-black text-lg flex items-center justify-center rounded-xl">
+        ✕
+      </button>
+    </div>
+  </div>
 
   <div id="app" class="relative w-full h-full flex flex-col justify-between overflow-hidden">
     
     <!-- ========================================== -->
-    <!-- 1. HEADER BAR UTAMA (MINIMALIS & SENTUH TINGGI) -->
+    <!-- 1. HEADER BAR UTAMA -->
     <!-- ========================================== -->
     <header class="w-full px-4 pt-3 pb-2 flex items-center justify-between z-20 safe-top">
       <!-- Logo Home Button -->
       <button id="btn-home" onclick="App.showHome()" class="flex items-center gap-2 bg-white border-4 border-brand-blue/30 rounded-2xl px-3 py-1.5 shadow-pop-sm active:translate-y-1 transition-all">
         <span class="text-2xl font-black text-brand-pink tracking-wider">JAGO BACA</span>
-        <span class="text-xs bg-brand-yellow px-2 py-0.5 rounded-full font-bold text-brand-dark hidden sm:inline-block">CEPAT</span>
+        <span id="vip-status-badge" class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-bold text-gray-600 hidden sm:inline-block">BIASA</span>
       </button>
 
-      <!-- Status Mode (Main Bebas / Dengarkan) -->
+      <!-- Status Mode -->
       <div id="mode-badge" class="hidden sm:flex items-center gap-2 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full border-2 border-brand-purple/20 shadow-sm">
         <span id="mode-icon" class="text-xl">🎨</span>
         <span id="mode-text" class="font-bold text-sm text-brand-purple">Main Bebas</span>
@@ -160,11 +162,16 @@
 
       <!-- Quick Action Buttons -->
       <div class="flex items-center gap-2">
-        <!-- Offline / Online Status Badge -->
+        <!-- Offline Status Badge -->
         <div id="offline-status-badge" class="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-green-100 border border-green-400 text-green-700 text-xs font-bold rounded-full">
           <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span id="status-text">Offline Ready</span>
         </div>
+
+        <!-- Tombol Update / Fitur VIP -->
+        <button id="btn-vip-gift" onclick="UpdateModal.open()" title="Update & Fitur Kode" class="w-12 h-12 bg-white border-4 border-brand-pink rounded-2xl flex items-center justify-center text-xl shadow-pop-sm active:translate-y-1 transition-all animate-bounce-slow">
+          🎁
+        </button>
 
         <!-- Audio Toggle Button -->
         <button id="btn-audio-toggle" onclick="AudioEngine.toggleAudio()" aria-label="Suara" class="w-12 h-12 bg-white border-4 border-brand-yellow rounded-2xl flex items-center justify-center text-2xl shadow-pop-sm active:translate-y-1 transition-all">
@@ -176,18 +183,10 @@
           <span id="case-text">Aa</span>
         </button>
 
-        <!-- Parent Settings Gear Button (Membutuhkan Press 2.5 Detik) -->
-        <!-- Parent Settings Gear Button (Menggunakan PointerEvents yang stabil untuk tahan 2 detik) -->
+        <!-- Parent Settings Gear Button -->
         <div class="relative">
-          <button id="btn-parent-gear" 
-                  onpointerdown="ParentsMode.startHold(event)" 
-                  onpointerup="ParentsMode.cancelHold()" 
-                  onpointerleave="ParentsMode.cancelHold()"
-                  onpointercancel="ParentsMode.cancelHold()"
-                  aria-label="Pengaturan Orang Tua" 
-                  class="w-12 h-12 bg-white border-4 border-brand-purple rounded-2xl flex items-center justify-center text-xl shadow-pop-sm active:translate-y-1 transition-all relative overflow-hidden">
-            ⚙️
-            <!-- Progress Overlay saat Ditahan -->
+          <button onmousedown="ParentsMode.startHold(event)" onmouseup="ParentsMode.cancelHold()" onmouseleave="ParentsMode.cancelHold()" ontouchstart="ParentsMode.startHold(event)" ontouchend="ParentsMode.cancelHold()" class="w-12 h-12 bg-white border-4 border-brand-purple rounded-2xl flex items-center justify-center text-2xl shadow-pop-sm active:translate-y-1 transition-all overflow-hidden relative">
+            <span>⚙️</span>
             <div id="hold-progress" class="absolute bottom-0 left-0 right-0 bg-brand-purple/30 w-full h-0"></div>
           </button>
         </div>
@@ -199,18 +198,24 @@
     <!-- ========================================== -->
     <main id="main-content" class="relative flex-1 w-full flex flex-col justify-between items-center px-3 py-1 z-10">
       
-      <!-- MODE DENGARKAN PROMPT BANNER (Hidden by default) -->
+      <!-- MODE DENGARKAN PROMPT BANNER -->
       <div id="dengarkan-banner" class="hidden w-full max-w-md bg-white border-4 border-brand-pink rounded-3xl p-3 shadow-pop text-center mb-2 animate-pop-in">
         <div class="flex items-center justify-between gap-2">
+          <button onclick="DengarkanMode.prevWord()" class="px-3 py-2 bg-gray-100 text-brand-dark rounded-xl font-bold text-xs shadow-pop-sm active:scale-95">
+            ◀
+          </button>
           <button onclick="DengarkanMode.playTargetAudio()" class="w-12 h-12 bg-brand-pink text-white rounded-2xl flex items-center justify-center text-2xl shadow-pop-sm active:scale-95">
             🔊
           </button>
           <div class="flex-1">
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Susun Kata Ini:</p>
+            <div class="flex items-center justify-center gap-1">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Urutan Kata:</p>
+              <span id="target-word-index" class="text-xs font-black text-brand-purple">1/10</span>
+            </div>
             <p id="target-word-display" class="text-2xl font-black text-brand-dark tracking-widest">?</p>
           </div>
-          <button onclick="DengarkanMode.nextWord()" class="px-3 py-2 bg-brand-yellow text-brand-dark rounded-xl font-bold text-xs shadow-pop-sm">
-            Ganti ➔
+          <button onclick="DengarkanMode.nextWord()" class="px-3 py-2 bg-brand-yellow text-brand-dark rounded-xl font-bold text-xs shadow-pop-sm active:scale-95">
+            Lanjut ▶
           </button>
         </div>
       </div>
@@ -227,14 +232,20 @@
 
         <!-- Assembled Letters Container -->
         <div id="assembled-letters" class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full min-h-[90px] z-10">
-          <!-- Kartu Huruf Tersusun Muncul di Sini via JS -->
+          <!-- Kartu Huruf Tersusun -->
         </div>
 
-        <!-- Formed Word Badge & Audio Action -->
-        <div id="word-result-bar" class="hidden mt-3 flex items-center gap-3 bg-brand-yellow/30 border-2 border-brand-yellow px-4 py-2 rounded-2xl animate-pop-in">
-          <span id="word-result-text" class="text-2xl sm:text-3xl font-black text-brand-dark tracking-widest"></span>
+        <!-- Formed Word Badge & Audio Action (Disertai Tombol EJAAN) -->
+        <div id="word-result-bar" class="hidden mt-3 flex items-center gap-2 bg-brand-yellow/30 border-2 border-brand-yellow px-4 py-2 rounded-2xl animate-pop-in">
+          <span id="word-result-text" class="text-2xl sm:text-3xl font-black text-brand-dark tracking-widest mr-1"></span>
+          
+          <!-- Tombol EJA KATA -->
+          <button id="btn-spell-word" onclick="App.spellAssembledWord()" class="px-3 py-2 bg-brand-purple text-white rounded-2xl flex items-center gap-1 font-extrabold text-xs shadow-pop active:scale-90 transition-all">
+            <span>🔤</span> Eja
+          </button>
+
           <!-- Tombol Speaker Utama Baca Kata -->
-          <button id="btn-speak-word" onclick="App.speakAssembledWord()" class="w-12 h-12 bg-brand-green text-white rounded-2xl flex items-center justify-center text-2xl shadow-pop active:scale-90 transition-all">
+          <button id="btn-speak-word" onclick="App.speakAssembledWord()" class="w-10 h-10 bg-brand-green text-white rounded-2xl flex items-center justify-center text-xl shadow-pop active:scale-90 transition-all" title="Baca Langsung">
             🔊
           </button>
         </div>
@@ -243,9 +254,6 @@
         <button id="btn-reset" onclick="App.clearAssembled()" aria-label="Hapus Susunan" class="absolute bottom-2 right-2 w-11 h-11 bg-brand-pink/10 hover:bg-brand-pink/20 text-brand-pink rounded-xl flex items-center justify-center text-2xl font-black transition-all border border-brand-pink/30 active:scale-90">
           ↺
         </button>
-
-        <!-- Mode Match Indicator (Untuk Cocokkan Huruf Besar - Kecil) -->
-        <!-- Removed match indicator -->
       </section>
 
       <!-- ========================================== -->
@@ -253,14 +261,14 @@
       <!-- ========================================== -->
       <section class="w-full max-w-4xl mt-2 safe-bottom">
         
-        <!-- Mode Switch Tabs Sederhana -->
+        <!-- Mode Switch Tabs -->
         <div class="flex items-center justify-between mb-2 px-1">
           <div class="flex items-center gap-1.5">
             <button onclick="App.switchMode('free')" id="tab-free" class="px-3 py-1 rounded-xl font-bold text-xs bg-brand-purple text-white shadow-sm transition-all">
               🎨 Main Bebas
             </button>
             <button onclick="App.switchMode('listen')" id="tab-listen" class="px-3 py-1 rounded-xl font-bold text-xs bg-white text-brand-dark border border-gray-200 shadow-sm transition-all">
-              👂 Dengarkan
+              👂 Dengarkan & Tirukan
             </button>
           </div>
           
@@ -269,9 +277,8 @@
           </button>
         </div>
 
-        <!-- Horizontal Scrollable Container Huruf dengan Target Sentuh Besar -->
+        <!-- Container Huruf -->
         <div id="letter-dock" class="w-full bg-white/90 border-4 border-brand-yellow/60 rounded-3xl p-3 shadow-pop flex flex-wrap justify-center items-center gap-2 max-h-[38vh] overflow-y-auto no-scrollbar">
-          <!-- Huruf Alfabet di-generate oleh JS -->
         </div>
 
       </section>
@@ -279,18 +286,16 @@
     </main>
 
     <!-- ========================================== -->
-    <!-- 4. HOMEPAGE SCREEN OVERLAY (START SCREEN) -->
+    <!-- 4. HOMEPAGE SCREEN OVERLAY -->
     <!-- ========================================== -->
     <div id="home-screen" class="absolute inset-0 bg-brand-cream z-50 flex flex-col items-center justify-between p-6 text-center transition-all duration-500">
       
-      <!-- Top Decorative Shapes -->
       <div class="w-full flex justify-between items-center max-w-md safe-top">
         <div class="w-12 h-12 bg-brand-yellow rounded-2xl transform -rotate-12 flex items-center justify-center text-xl font-black">A</div>
         <div class="w-10 h-10 bg-brand-pink rounded-full transform rotate-12 flex items-center justify-center text-lg font-black text-white">b</div>
         <div class="w-12 h-12 bg-brand-green rounded-2xl transform rotate-4 flex items-center justify-center text-xl font-black text-white">C</div>
       </div>
 
-      <!-- Main Logo & Title -->
       <div class="my-auto flex flex-col items-center">
         <div class="relative mb-4">
           <h1 class="text-7xl sm:text-8xl font-black text-brand-blue tracking-wider drop-shadow-lg flex items-center justify-center gap-1">
@@ -302,7 +307,6 @@
           <p class="text-base sm:text-lg font-bold text-brand-dark/70 mt-2">Jago Membaca Cepat Bahasa Indonesia</p>
         </div>
 
-        <!-- Tombol Besar MULAI -->
         <button onclick="App.startApp()" class="group relative inline-flex items-center justify-center px-10 py-5 text-3xl font-black text-white bg-brand-green border-4 border-white rounded-3xl shadow-pop-lg active:translate-y-2 transition-all duration-150 animate-pulse-glow">
           <span class="mr-3 text-4xl">▶</span> MULAI
         </button>
@@ -310,7 +314,6 @@
         <p class="text-xs text-gray-400 mt-6 font-semibold">Tanpa Akun • Tanpa Level • Langsung Main!</p>
       </div>
 
-      <!-- Bottom Credits / Parent Settings Entry -->
       <div class="w-full max-w-md flex justify-between items-center safe-bottom text-xs font-bold text-gray-400">
         <span>Aplikasi Anak Usia Dini</span>
         <button onclick="ParentsMode.openSettingsDirectly()" class="text-brand-purple underline">Pengaturan Orang Tua</button>
@@ -318,12 +321,11 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- 5. PARENT SETTINGS MODAL (PENGATURAN ORANG TUA) -->
+    <!-- 5. PARENT SETTINGS MODAL -->
     <!-- ========================================== -->
     <div id="modal-parents" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-lg rounded-3xl border-4 border-brand-purple p-6 max-h-[90vh] overflow-y-auto shadow-pop-lg relative">
         
-        <!-- Header Modal -->
         <div class="flex items-center justify-between pb-4 border-b-2 border-gray-100 mb-4">
           <div class="flex items-center gap-2">
             <span class="text-2xl">⚙️</span>
@@ -332,16 +334,13 @@
           <button onclick="ParentsMode.closeModal()" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-lg flex items-center justify-center">✕</button>
         </div>
 
-        <!-- Body Form Pengaturan -->
         <div class="space-y-4 text-sm font-bold text-brand-dark">
           
-          <!-- Nama Anak -->
           <div>
-            <label class="block text-gray-600 mb-1">Nama Anak:</label>
-            <input type="text" id="setting-child-name" placeholder="Contoh: Budi" class="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-2 font-bold focus:border-brand-purple outline-none">
+            <label class="block text-gray-600 mb-1">Nama Anak (Untuk Ucapan Selamat):</label>
+            <input type="text" id="setting-child-name" placeholder="Contoh: Kafa" class="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-2 font-bold focus:border-brand-purple outline-none">
           </div>
 
-          <!-- Kecepatan Audio Phonics -->
           <div>
             <div class="flex justify-between text-gray-600 mb-1">
               <label>Kecepatan Suara Bacaan:</label>
@@ -350,16 +349,6 @@
             <input type="range" id="setting-speech-rate" min="0.5" max="1.2" step="0.05" value="0.85" oninput="ParentsMode.updateRateLabel(this.value)" class="w-full accent-brand-purple cursor-pointer">
           </div>
 
-          <!-- Ukuran Font Cards -->
-          <div>
-            <label class="block text-gray-600 mb-1">Ukuran Kartu Huruf:</label>
-            <select id="setting-card-size" class="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-2 font-bold focus:border-brand-purple outline-none">
-              <option value="normal">Normal (Standar Tablet/HP)</option>
-              <option value="large">Sangat Besar (Untuk Jari Kecil)</option>
-            </select>
-          </div>
-
-          <!-- Ringkasan Statistik Belajar Sederhana -->
           <div class="bg-brand-cream border-2 border-brand-yellow p-4 rounded-2xl">
             <h3 class="font-black text-brand-dark mb-2 flex items-center gap-2">
               📊 Perkembangan Belajar Anak
@@ -375,17 +364,13 @@
               </div>
             </div>
             
-            <!-- Tombol Install PWA untuk Orang Tua jika Browser Mengizinkan -->
             <div id="pwa-install-container" class="hidden mt-3 pt-2 border-t border-brand-yellow/30 text-center">
-              <button id="btn-pwa-install" onclick="OfflineEngine.installPWA()" class="w-full py-2 bg-brand-blue text-white rounded-xl text-xs font-black shadow-pop-sm">
-                📲 Pasang Aplikasi di HP/Tablet (Bisa Tanpa Kuota)
+              <button id="btn-pwa-install" onclick="OfflineEngine.installPWA()" class="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black shadow-pop-sm flex items-center justify-center gap-1">
+                Yuk install sekarang 😊
               </button>
             </div>
-            
-            <p class="text-[11px] text-gray-400 mt-2 text-center">*Data disimpan di browser tanpa akun & siap digunakan offline.</p>
           </div>
 
-          <!-- Data Kata Terbentuk -->
           <div>
             <label class="block text-gray-600 mb-1">Kata Yang Sering Disusun:</label>
             <div id="stat-word-list" class="flex flex-wrap gap-1 bg-gray-50 p-3 rounded-2xl min-h-[50px] text-xs text-gray-500">
@@ -393,7 +378,6 @@
             </div>
           </div>
 
-          <!-- Reset Progress Button -->
           <div class="pt-2">
             <button onclick="ParentsMode.resetProgress()" class="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-2xl font-bold hover:bg-red-100 transition-all">
               🗑️ Reset Data Perkembangan
@@ -402,10 +386,86 @@
 
         </div>
 
-        <!-- Save Button -->
         <div class="mt-6">
           <button onclick="ParentsMode.saveSettings()" class="w-full py-3 bg-brand-purple text-white rounded-2xl font-black text-base shadow-pop active:scale-95 transition-all">
             Simpan & Kembali Bermain
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 6. MODAL CELEBRATION -->
+    <!-- ========================================== -->
+    <div id="modal-celebration" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-3xl border-4 border-brand-yellow p-6 text-center shadow-pop-lg animate-pop-in relative overflow-hidden">
+        
+        <div class="text-6xl mb-3 animate-bounce">🎉</div>
+        <h2 class="text-2xl font-black text-brand-pink mb-1">LUAR BIASA!</h2>
+        
+        <p id="celebration-message" class="text-lg font-black text-brand-dark my-4 leading-relaxed">
+          Yes kamu hebat, ayo <span id="celebration-child-name" class="text-brand-purple underline">Kafa</span> belajar lagi! 🚀
+        </p>
+
+        <div class="bg-brand-cream border-2 border-dashed border-brand-green p-3 rounded-2xl mb-4 text-xs font-bold text-brand-green">
+          🌟 Kamu telah berhasil menyusun <span id="celebration-count">5</span> Kosakata!
+        </div>
+
+        <button onclick="CelebrationEngine.closeModal()" class="w-full py-3.5 bg-brand-green text-white rounded-2xl font-black text-lg shadow-pop active:scale-95 transition-all">
+          Lanjut Belajar Lagi! ▶
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. POP-UP UPDATE & AKTIVASI KODE VIP -->
+    <!-- ========================================== -->
+    <div id="modal-update" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl border-4 border-brand-pink p-6 shadow-pop-lg relative animate-pop-in">
+        
+        <!-- Header & Close Button -->
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-3xl">🎁</span>
+            <div>
+              <h2 class="text-lg font-black text-brand-dark">Update & Aktivasi Fitur VIP</h2>
+              <p class="text-[11px] text-gray-400 font-bold">Buka Semua Kata & Fitur Eja Tanpa Batas</p>
+            </div>
+          </div>
+          <button onclick="UpdateModal.close()" class="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold flex items-center justify-center">✕</button>
+        </div>
+
+        <!-- Info Fitur Biasa vs VIP -->
+        <div class="space-y-3 mb-5 text-xs font-bold text-brand-dark">
+          <div class="bg-brand-cream border border-brand-yellow p-3 rounded-2xl">
+            <p class="font-extrabold text-brand-purple mb-1 text-sm">Perbedaan Fitur Biasa vs VIP:</p>
+            <ul class="list-disc list-inside text-gray-600 space-y-1">
+              <li><strong class="text-brand-dark">Fitur Biasa:</strong> Terbatas ejaan & kata dengarkan 2 huruf saja.</li>
+              <li><strong class="text-brand-purple">Fitur VIP:</strong> Terbuka semua ejaan & kosakata lengkap tanpa batas dan update terus!</li>
+            </ul>
+          </div>
+
+          <!-- Form Masukkan 4 Kode -->
+          <div class="bg-gray-50 border-2 border-brand-blue/30 p-4 rounded-2xl text-center">
+            <label class="block text-gray-700 font-black mb-1">Masukkan 4 Digit Kode Aktivasi:</label>
+            <div class="flex justify-center gap-2 my-2">
+              <input type="password" maxlength="4" id="update-code-input" placeholder="0000" class="w-36 text-center text-2xl font-black tracking-widest bg-white border-2 border-brand-blue rounded-xl py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-purple">
+            </div>
+            <button onclick="UpdateModal.verifyCode()" class="w-full py-2 bg-brand-purple text-white rounded-xl font-black text-xs shadow-pop-sm active:scale-95 transition-all">
+              Buka Semua Fitur VIP 🔓
+            </button>
+            <p id="code-feedback-msg" class="text-[11px] font-extrabold mt-2 hidden"></p>
+          </div>
+        </div>
+
+        <!-- Tombol Hubungi Admin (Tautan Checkout) -->
+        <div class="pt-2 border-t border-gray-100 flex flex-col gap-2">
+          <a href="https://lynk.id/madurangapak/4xp9qxlyky1w" target="_blank" class="w-full py-3 bg-brand-green text-black rounded-2xl font-black text-center text-sm shadow-pop active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span>💬</span> Kode Access
+          </a>
+          <button onclick="UpdateModal.close()" class="w-full py-2 text-gray-[1000] font-bold text-xs hover:text-gray-600">
+            Nanti Saja / Tutup
           </button>
         </div>
 
@@ -416,7 +476,16 @@
 
   <script>
     /* ===================================================================
-       1. WEB AUDIO SYNTHESIZER ENGINE (SFX Lembut Tanpa Asset MP3 External)
+       0. VIP ENGINE (MANAGEMENT HAK AKSES PERANGKAT)
+       =================================================================== */
+    const VIPEngine = {
+      isVIP() {
+        return localStorage.getItem('baca_vip_unlocked') === 'true';
+      }
+    };
+
+    /* ===================================================================
+       1. WEB AUDIO SYNTHESIZER ENGINE
        =================================================================== */
     const AudioEngine = {
       ctx: null,
@@ -427,7 +496,6 @@
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
           this.ctx = new AudioCtx();
         }
-        // Load preference
         const savedAudio = localStorage.getItem('baca_audio_enabled');
         if (savedAudio !== null) {
           this.audioEnabled = JSON.parse(savedAudio);
@@ -447,7 +515,6 @@
         if (icon) icon.innerText = this.audioEnabled ? '🔊' : '🔇';
       },
 
-      // SFX Tap Pop
       playPop() {
         if (!this.audioEnabled) return;
         try {
@@ -466,7 +533,6 @@
         } catch (e) {}
       },
 
-      // SFX Snap In Area
       playSnap() {
         if (!this.audioEnabled) return;
         try {
@@ -474,8 +540,8 @@
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
-          osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.12); // E5
+          osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(659.25, this.ctx.currentTime + 0.12);
           gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
           osc.connect(gain);
@@ -485,12 +551,11 @@
         } catch (e) {}
       },
 
-      // SFX Chime Kemenangan Kata
       playSuccessChime() {
         if (!this.audioEnabled) return;
         try {
           this.init();
-          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          const notes = [523.25, 659.25, 783.99, 1046.50];
           notes.forEach((freq, idx) => {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -508,40 +573,35 @@
     };
 
     /* ===================================================================
-       2. PHONICS & SPEECH SYNTHESIS ENGINE (Indonesian Web Speech)
+       2. PHONICS & SPEECH SYNTHESIS ENGINE
        =================================================================== */
     const PhonicsEngine = {
       synth: window.speechSynthesis,
       
-      // Map Bunyi Phonics Huruf Bahasa Indonesia
       phonicsMap: {
-        'A': 'a', 'B': 'b', 'C': 'ce', 'D': 'd', 'E': 'e', 
+        'A': 'a', 'B': 'be', 'C': 'ce', 'D': 'de', 'E': 'e', 
         'F': 'ef', 'G': 'ge', 'H': 'ha', 'I': 'i', 'J': 'je', 
         'K': 'ka', 'L': 'el', 'M': 'em', 'N': 'en', 'O': 'o', 
-        'P': 'p', 'Q': 'kiu', 'R': 'er', 'S': 'es', 'T': 'te', 
-        'U': 'u', 'V': 've', 'W': 'w', 'X': 'eks', 'Y': 'ye', 'Z': 'zet'
+        'P': 'pe', 'Q': 'kiu', 'R': 'er', 'S': 'es', 'T': 'te', 
+        'U': 'u', 'V': 've', 'W': 'we', 'X': 'eks', 'Y': 'ye', 'Z': 'zet'
       },
 
       speakLetter(letter) {
-        if (!AudioEngine.audioEnabled) return;
-        if (!this.synth) return;
-
-        this.synth.cancel(); // Stop pending speech
+        if (!AudioEngine.audioEnabled || !this.synth) return;
+        this.synth.cancel();
         const upper = letter.toUpperCase();
         const textToSpeak = this.phonicsMap[upper] || letter;
         
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = 'id-ID';
         utterance.rate = parseFloat(localStorage.getItem('baca_speech_rate')) || 0.85;
-        utterance.pitch = 1.1; // Suara sedikit lebih tinggi & ramah anak
+        utterance.pitch = 1.1;
 
         this.synth.speak(utterance);
       },
 
       speakWord(word) {
-        if (!AudioEngine.audioEnabled) return;
-        if (!this.synth) return;
-
+        if (!AudioEngine.audioEnabled || !this.synth) return;
         this.synth.cancel();
         const utterance = new SpeechSynthesisUtterance(word.toLowerCase());
         utterance.lang = 'id-ID';
@@ -549,42 +609,65 @@
         utterance.pitch = 1.05;
 
         this.synth.speak(utterance);
+      },
+
+      spellWord(word) {
+        if (!AudioEngine.audioEnabled || !this.synth) return;
+        this.synth.cancel();
+
+        const cleanWord = word.toUpperCase().trim();
+        const vowels = ['A', 'I', 'U', 'E', 'O'];
+        let spellTextParts = [];
+
+        let i = 0;
+        while (i < cleanWord.length) {
+          const char1 = cleanWord[i];
+          const char2 = cleanWord[i + 1];
+
+          if (char1 && char2 && !vowels.includes(char1) && vowels.includes(char2)) {
+            const sound1 = this.phonicsMap[char1] || char1;
+            const sound2 = this.phonicsMap[char2] || char2;
+            const combined = (char1 + char2).toLowerCase();
+            spellTextParts.push(`${sound1} ${sound2}, ${combined}`);
+            i += 2;
+          } else if (char1 && vowels.includes(char1)) {
+            spellTextParts.push(char1.toLowerCase());
+            i += 1;
+          } else {
+            const sound = this.phonicsMap[char1] || char1;
+            spellTextParts.push(sound);
+            i += 1;
+          }
+        }
+
+        const fullSpellingSentence = spellTextParts.join('. ') + '. ' + cleanWord.toLowerCase() + '!';
+
+        const utterance = new SpeechSynthesisUtterance(fullSpellingSentence);
+        utterance.lang = 'id-ID';
+        utterance.rate = (parseFloat(localStorage.getItem('baca_speech_rate')) || 0.85) * 0.9;
+        utterance.pitch = 1.1;
+
+        this.synth.speak(utterance);
       }
     };
 
     /* ===================================================================
-       3. INDONESIAN WORD DATABASE (Database Kata Ramah Anak)
+       3. INDONESIAN WORD DATABASE
        =================================================================== */
     const WordDatabase = {
-      // Database ratusan kata umum 2-5 huruf
       words: [
-        // 2 Huruf / Suku kata
         "BA", "BI", "BU", "BE", "BO", "CA", "CI", "CU", "CE", "CO",
         "DA", "DI", "DU", "DE", "DO", "GA", "GI", "GU", "GE", "GO",
         "MA", "MI", "MU", "ME", "MO", "PA", "PI", "PU", "PE", "PO",
-        "YA", "YU", "KE", "DI", "NI", "LI", "SI", "LA", "SA", "TA",
-
-        // 3 Huruf
-        "IBU", "APA", "ADA", "AYO", "UBI", "AKU", "BAN", "CAT", "BUS", 
-        "JAM", "TAS", "ES", "AIR", "API", "GUM", "TEH", "BEL",
-
-
-        // 5 Huruf
-        "BEBEK", "KUCING", "RUMAH", "MOBIL", "GAJAH", "HUJAN", "POHON", 
-        "TAWA", "BOTOL", "BULAN", "MACAN", "TAMAN", "DAUN", "BUNGA", "KERETA", "SEPEDA", "KAPAL", "PESAWAT", "IKAN", "KAMBING", "AYAM", "KUDA", "SAPI", "KELINCI", "TIKUS", "BURUNG", "KATAK", "ULAR", "LEBAH", "SEMUT", "LALAT", "JERUK", "APEL", "MANGGA", "PISANG", "SALAK", "MELON", "NASI", "ROTI", "SUSU", "KEJU", "KURSI", "MEJA", "PINTU", "SEPATU", "BAJU", "TOPI", "KAOS", "CELANA", "KASUR", "BANTAL", "LAMPU", "KIPAS", "KOMPOR", "SENDOK", "PIRING", "GELAS", "SAPU", "EMBER", "KUNCI", "JAMBU", "NANAS", "PEPAYA", "DURIAN", "ANGGUR", "SEMANGKA", "KELAPA", "TOMAT", "WORTEL", "JAGUNG", "KENTANG", "TELUR", "DAGING", "IKAN", "UDANG", "CACING", "KUPU", "NYAMUK", "JANGKRIK", "BELALANG", "KEPITING", "KERBAU", "RUSA", "ZEBRA", "HARIMAU", "SINGA", "MONYET", "GORILA", "PANDA", "KOALA", "GAJAH", "KUCING", "BADAK", "BUAYA", "MAMA", "PAPA", "BUKU", "BOLA", "SAPI", "KAKI", "MATA", "ROTI", 
-        "NASI", "KUDA", "BAJU", "TOPI", "MEJA", "BUKA", "BACA", "TALI", 
-        "BUMI", "NAMA", "PIPA", "GIGI", "JARI", "DASI", "KAOS", "LARI", 
-        "CUCI", "LUAR", "DUA", "TIGA", "LIMA", "SATU", "KOTA", "KAYU",
-        "PENA", "PAGI", "SULI", "KATA", "BARU", "SAYA", "KAMU", "KITA",
+        "IBU", "AKU", "ADA", "AYO", "UBI", "APA", "BUS", "JAM", "TAS",
+        "BOLA", "BACA", "BUKU", "BUMI", "DASI", "GIGI", "JARI", "KAKI", 
+        "KAYU", "KUDA", "KOTA", "LARI", "LIMA", "MATA", "MEJA", "NASI", 
+        "PENA", "PISANG", "ROTI", "SAPI", "SAYA", "TALI", "TOPI", "CUCI",
+        "BEBEK", "KUCING", "RUMAH", "MOBIL", "GAJAH", "HUJAN", "POHON"
       ],
 
       isKnownWord(str) {
         return this.words.includes(str.toUpperCase());
-      },
-
-      getRandomWord() {
-        const simpleWords = this.words.filter(w => w.length >= 3 && w.length <= 4);
-        return simpleWords[Math.floor(Math.random() * simpleWords.length)];
       }
     };
 
@@ -592,22 +675,23 @@
        4. APP MAIN CONTROLLER & STATE MANAGEMENT
        =================================================================== */
     const App = {
-      currentCase: 'uppercase', // 'uppercase' | 'lowercase'
-      currentMode: 'free', // 'free' | 'listen' | 'match'
-      assembledLetters: [], // Array of letter strings
+      currentCase: 'uppercase',
+      currentMode: 'free',
+      assembledLetters: [],
       alphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
       stats: {
         totalTouches: 0,
         wordsFormed: 0,
         formedWordList: {}
       },
+      lastCelebratedMilestone: 0,
 
       init() {
         AudioEngine.init();
         this.loadStats();
         this.renderLetters();
-        this.setupDragAndDrop();
         this.checkIdleHint();
+        this.updateVIPBadge();
       },
 
       startApp() {
@@ -615,7 +699,24 @@
         document.getElementById('home-screen').classList.add('translate-y-full', 'opacity-0');
         setTimeout(() => {
           document.getElementById('home-screen').style.display = 'none';
+          
+          if (!VIPEngine.isVIP()) {
+            UpdateModal.openOnStart();
+          }
         }, 500);
+      },
+
+      updateVIPBadge() {
+        const badge = document.getElementById('vip-status-badge');
+        if (badge) {
+          if (VIPEngine.isVIP()) {
+            badge.innerText = 'VIP UNLOCKED 🔓';
+            badge.className = 'text-xs bg-brand-green/20 border border-brand-green text-brand-green px-2 py-0.5 rounded-full font-black hidden sm:inline-block';
+          } else {
+            badge.innerText = 'BIASA (TERBATAS)';
+            badge.className = 'text-xs bg-gray-200 px-2 py-0.5 rounded-full font-bold text-gray-600 hidden sm:inline-block';
+          }
+        }
       },
 
       showHome() {
@@ -638,15 +739,12 @@
         AudioEngine.playPop();
         this.currentMode = mode;
         
-        // Update tab styles
         ['free', 'listen'].forEach(m => {
           const tab = document.getElementById(`tab-${m}`);
           if (tab) {
-            if (m === mode) {
-              tab.className = "px-3 py-1 rounded-xl font-bold text-xs bg-brand-purple text-white shadow-sm transition-all";
-            } else {
-              tab.className = "px-3 py-1 rounded-xl font-bold text-xs bg-white text-brand-dark border border-gray-200 shadow-sm transition-all";
-            }
+            tab.className = m === mode 
+              ? "px-3 py-1 rounded-xl font-bold text-xs bg-brand-purple text-white shadow-sm transition-all"
+              : "px-3 py-1 rounded-xl font-bold text-xs bg-white text-brand-dark border border-gray-200 shadow-sm transition-all";
           }
         });
 
@@ -656,7 +754,7 @@
 
         if (mode === 'listen') {
           if (dengarkanBanner) dengarkanBanner.classList.remove('hidden');
-          if (modeText) modeText.innerText = 'Mode Dengarkan';
+          if (modeText) modeText.innerText = 'Mode Dengarkan (Berurutan)';
           if (modeIcon) modeIcon.innerText = '👂';
           DengarkanMode.init();
         } else {
@@ -670,11 +768,9 @@
       renderLetters() {
         const container = document.getElementById('letter-dock');
         container.innerHTML = '';
-
-        // Highlight Vowels (A, I, U, E, O) with warm colors
         const vowels = ['A', 'I', 'U', 'E', 'O'];
 
-        this.alphabet.forEach((char, index) => {
+        this.alphabet.forEach((char) => {
           const isVowel = vowels.includes(char);
           const displayChar = this.currentCase === 'uppercase' ? char : char.toLowerCase();
           
@@ -686,7 +782,6 @@
           card.innerText = displayChar;
           card.dataset.letter = displayChar;
           
-          // Tap to add letter
           card.addEventListener('click', () => {
             this.handleLetterTap(displayChar);
           });
@@ -705,12 +800,16 @@
         AudioEngine.playSnap();
         PhonicsEngine.speakLetter(letter);
 
-        // Track touch stats
         this.stats.totalTouches++;
         this.saveStats();
 
-        // Add to assembly area
         this.assembledLetters.push(letter);
+        this.updateAssemblyUI();
+      },
+
+      removeLetterAt(index) {
+        AudioEngine.playPop();
+        this.assembledLetters.splice(index, 1);
         this.updateAssemblyUI();
       },
 
@@ -736,13 +835,11 @@
 
         emptyHint.style.display = 'none';
 
-        // Render Cards in Assembly Area
         this.assembledLetters.forEach((letter, index) => {
           const card = document.createElement('div');
           card.className = 'letter-card w-14 h-16 sm:w-16 sm:h-20 bg-white border-4 border-brand-purple rounded-2xl flex items-center justify-center font-black text-3xl sm:text-4xl text-brand-purple shadow-pop cursor-pointer animate-pop-in relative group';
           card.innerText = letter;
 
-          // Badged button to remove individual letter
           const removeBtn = document.createElement('span');
           removeBtn.className = 'absolute -top-2 -right-2 w-6 h-6 bg-brand-pink text-white text-xs rounded-full flex items-center justify-center font-bold shadow-sm';
           removeBtn.innerText = '✕';
@@ -758,7 +855,6 @@
 
         const currentWord = this.assembledLetters.join('').toUpperCase();
 
-        // Auto Word & Syllable Recognition
         if (currentWord.length >= 2) {
           wordResultBar.classList.remove('hidden');
           wordResultText.innerText = currentWord;
@@ -769,12 +865,12 @@
             AudioEngine.playSuccessChime();
             PhonicsEngine.speakWord(currentWord);
 
-            // Save formed word stat
             this.stats.wordsFormed++;
             this.stats.formedWordList[currentWord] = (this.stats.formedWordList[currentWord] || 0) + 1;
             this.saveStats();
 
-            // Trigger Dengarkan mode validation if active
+            CelebrationEngine.checkMilestone(this.stats.wordsFormed);
+
             if (this.currentMode === 'listen') {
               DengarkanMode.checkAnswer(currentWord);
             }
@@ -791,31 +887,20 @@
         }
       },
 
-      checkMatchingPair() {
-        const [l1, l2] = this.assembledLetters;
-        if (l1.toLowerCase() === l2.toLowerCase() && l1 !== l2) {
-          // Success Match!
-          AudioEngine.playSuccessChime();
-          const feedback = document.getElementById('match-feedback');
-          feedback.classList.remove('hidden');
-          setTimeout(() => {
-            feedback.classList.add('hidden');
-            this.clearAssembled();
-          }, 1500);
-        } else {
-          // Soft reset on mismatch
-          setTimeout(() => {
-            this.clearAssembled();
-          }, 1000);
-        }
-      },
+      spellAssembledWord() {
+        const word = this.assembledLetters.join('');
+        if (!word) return;
 
-      setupDragAndDrop() {
-        // Interaksi difokuskan 100% pada SENTUHAN (TAP) langsung agar anak tidak kesulitan menggeser huruf.
+        if (!VIPEngine.isVIP()) {
+          if (word.length > 2) {
+            return; 
+          }
+        }
+
+        PhonicsEngine.spellWord(word);
       },
 
       checkIdleHint() {
-        // Visual cue hint jika anak diam selama 8 detik
         let idleTimer;
         const resetTimer = () => {
           clearTimeout(idleTimer);
@@ -845,20 +930,58 @@
     };
 
     /* ===================================================================
-       5. MODE "DENGARKAN" (Audio Challenge Mode)
+       5. MODE "DENGARKAN"
        =================================================================== */
     const DengarkanMode = {
+      currentIndex: 0,
       targetWord: '',
 
+      getAvailableWords() {
+        if (VIPEngine.isVIP()) {
+          return WordDatabase.words;
+        } else {
+          return WordDatabase.words.filter(w => w.length === 2).slice(0, 10);
+        }
+      },
+
       init() {
-        this.nextWord();
+        this.currentIndex = 0;
+        this.loadWord();
+      },
+
+      loadWord() {
+        const words = this.getAvailableWords();
+        if (words.length === 0) return;
+
+        if (this.currentIndex >= words.length) this.currentIndex = words.length - 1;
+        if (this.currentIndex < 0) this.currentIndex = 0;
+
+        this.targetWord = words[this.currentIndex];
+        
+        document.getElementById('target-word-display').innerText = this.targetWord;
+        document.getElementById('target-word-index').innerText = `${this.currentIndex + 1}/${words.length}`;
+        
+        App.clearAssembled();
+        this.playTargetAudio();
       },
 
       nextWord() {
-        this.targetWord = WordDatabase.getRandomWord();
-        document.getElementById('target-word-display').innerText = this.targetWord;
-        App.clearAssembled();
-        this.playTargetAudio();
+        const words = this.getAvailableWords();
+        if (this.currentIndex >= words.length - 1) {
+          return;
+        }
+        AudioEngine.playPop();
+        this.currentIndex++;
+        this.loadWord();
+      },
+
+      prevWord() {
+        if (this.currentIndex <= 0) {
+          return;
+        }
+        AudioEngine.playPop();
+        this.currentIndex--;
+        this.loadWord();
       },
 
       playTargetAudio() {
@@ -869,14 +992,107 @@
         if (userWord === this.targetWord) {
           AudioEngine.playSuccessChime();
           setTimeout(() => {
-            this.nextWord();
+            const words = this.getAvailableWords();
+            if (this.currentIndex < words.length - 1) {
+              this.nextWord();
+            }
           }, 1500);
         }
       }
     };
 
     /* ===================================================================
-       6. PARENT SETTINGS & SECURITY GATE (Tekan 2.5s)
+       6. CELEBRATION ENGINE
+       =================================================================== */
+    const CelebrationEngine = {
+      checkMilestone(totalWords) {
+        if (totalWords > 0 && totalWords % 5 === 0 && App.lastCelebratedMilestone !== totalWords) {
+          App.lastCelebratedMilestone = totalWords;
+          setTimeout(() => {
+            this.triggerCelebration(totalWords);
+          }, 1000);
+        }
+      },
+
+      triggerCelebration(count) {
+        AudioEngine.playSuccessChime();
+
+        const childName = localStorage.getItem('baca_child_name') || 'Kafa';
+        document.getElementById('celebration-child-name').innerText = childName;
+        document.getElementById('celebration-count').innerText = count;
+
+        const modal = document.getElementById('modal-celebration');
+        modal.classList.remove('hidden');
+
+        const speechMsg = `Yes kamu hebat, ayo ${childName} belajar lagi!`;
+        if (PhonicsEngine.synth && AudioEngine.audioEnabled) {
+          PhonicsEngine.synth.cancel();
+          const utterance = new SpeechSynthesisUtterance(speechMsg);
+          utterance.lang = 'id-ID';
+          utterance.rate = 0.85;
+          utterance.pitch = 1.1;
+          PhonicsEngine.synth.speak(utterance);
+        }
+      },
+
+      closeModal() {
+        AudioEngine.playPop();
+        document.getElementById('modal-celebration').classList.add('hidden');
+      }
+    };
+
+    /* ===================================================================
+       7. UPDATE & KODE MODAL ENGINE (AKTIVASI KODE)
+       =================================================================== */
+    const UpdateModal = {
+      validCodes: ['b4c4'],
+
+      openOnStart() {
+        if (!VIPEngine.isVIP()) {
+          this.open();
+        }
+      },
+
+      open() {
+        AudioEngine.playPop();
+        const modal = document.getElementById('modal-update');
+        const feedback = document.getElementById('code-feedback-msg');
+        feedback.classList.add('hidden');
+        document.getElementById('update-code-input').value = '';
+        modal.classList.remove('hidden');
+      },
+
+      close() {
+        AudioEngine.playPop();
+        document.getElementById('modal-update').classList.add('hidden');
+      },
+
+      verifyCode() {
+        const inputCode = document.getElementById('update-code-input').value.trim();
+        const feedback = document.getElementById('code-feedback-msg');
+        feedback.classList.remove('hidden');
+
+        if (this.validCodes.includes(inputCode)) {
+          AudioEngine.playSuccessChime();
+          feedback.className = 'text-[11px] font-extrabold mt-2 text-green-600';
+          feedback.innerText = '✅ KODE BENAR! Seluruh Fitur VIP Berhasil Diaktifkan!';
+          
+          localStorage.setItem('baca_vip_unlocked', 'true');
+          App.updateVIPBadge();
+
+          setTimeout(() => {
+            this.close();
+          }, 1800);
+        } else {
+          AudioEngine.playPop();
+          feedback.className = 'text-[11px] font-extrabold mt-2 text-red-500 animate-wiggle';
+          feedback.innerText = '❌ Kode Salah! Hubungi Admin untuk mendapatkan kode.';
+        }
+      }
+    };
+
+    /* ===================================================================
+       8. PARENT SETTINGS & SECURITY GATE
        =================================================================== */
     const ParentsMode = {
       holdTimer: null,
@@ -894,7 +1110,7 @@
         this.holdTimer = setTimeout(() => {
           this.openModal();
           this.cancelHold();
-        }, 2000); // Tahan 2 Detik
+        }, 2000);
       },
 
       cancelHold() {
@@ -911,9 +1127,11 @@
 
       openModal() {
         AudioEngine.playPop();
-        // Load parent stats & form settings
         document.getElementById('stat-total-touches').innerText = App.stats.totalTouches;
         document.getElementById('stat-words-formed').innerText = App.stats.wordsFormed;
+
+        const childNameInput = document.getElementById('setting-child-name');
+        childNameInput.value = localStorage.getItem('baca_child_name') || 'Kafa';
 
         const listContainer = document.getElementById('stat-word-list');
         const words = Object.keys(App.stats.formedWordList);
@@ -946,7 +1164,7 @@
         const speechRate = document.getElementById('setting-speech-rate').value;
         localStorage.setItem('baca_speech_rate', speechRate);
 
-        const childName = document.getElementById('setting-child-name').value;
+        const childName = document.getElementById('setting-child-name').value.trim();
         if (childName) localStorage.setItem('baca_child_name', childName);
 
         this.closeModal();
@@ -954,6 +1172,7 @@
 
       resetProgress() {
         App.stats = { totalTouches: 0, wordsFormed: 0, formedWordList: {} };
+        App.lastCelebratedMilestone = 0;
         App.saveStats();
         this.openModal();
       }
@@ -966,7 +1185,7 @@
     });
 
     /* ===================================================================
-       7. OFFLINE ENGINE & SERVICE WORKER GENERATOR (PWA Self-Contained)
+       9. OFFLINE ENGINE & SERVICE WORKER WITH INSTALL POPUP
        =================================================================== */
     const OfflineEngine = {
       deferredPrompt: null,
@@ -1017,9 +1236,21 @@
         window.addEventListener('beforeinstallprompt', (e) => {
           e.preventDefault();
           this.deferredPrompt = e;
+          const popup = document.getElementById('pwa-install-popup');
+          if (popup && !sessionStorage.getItem('pwa_popup_closed')) {
+            popup.classList.remove('hidden');
+          }
           const container = document.getElementById('pwa-install-container');
           if (container) container.classList.remove('hidden');
         });
+
+        // Tampilkan pop-up install jika belum di-close di sesi ini
+        setTimeout(() => {
+          const popup = document.getElementById('pwa-install-popup');
+          if (popup && !sessionStorage.getItem('pwa_popup_closed')) {
+            popup.classList.remove('hidden');
+          }
+        }, 1200);
       },
 
       installPWA() {
@@ -1027,12 +1258,19 @@
           this.deferredPrompt.prompt();
           this.deferredPrompt.userChoice.then((choice) => {
             if (choice.outcome === 'accepted') {
-              const container = document.getElementById('pwa-install-container');
-              if (container) container.classList.add('hidden');
+              this.closePopup();
             }
             this.deferredPrompt = null;
           });
+        } else {
+          this.closePopup();
         }
+      },
+
+      closePopup() {
+        const popup = document.getElementById('pwa-install-popup');
+        if (popup) popup.classList.add('hidden');
+        sessionStorage.setItem('pwa_popup_closed', 'true');
       }
     };
   </script>

@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Baca Cepat- Belajar Membaca & Audio Interaktif</title>
+    
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#facc15">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mint: { 100: '#e6f4f1', 300: '#a3e4d7', 500: '#2ec4b6', 600: '#1b9aaa' },
+                        sky: { 100: '#e0f2fe', 400: '#38bdf8', 500: '#0ea5e9' },
+                        sunny: { 300: '#fde047', 400: '#facc15', 500: '#eab308' },
+                        peach: { 300: '#ffedd5', 400: '#fb923c', 500: '#f97316' },
+                        softgreen: { 400: '#4ade80', 500: '#22c55e' },
+                        candy: {
+                            pink: '#ff6b8b',
+                            purple: '#a855f7',
+                            yellow: '#ffca28',
+                            cyan: '#06b6d4',
+                            lime: '#84cc16',
+                            orange: '#ff7043'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'Fredoka', 'sans-serif'],
+                        fredoka: ['Fredoka', 'cursive', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Fredoka & Quicksand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS Styles -->
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fef3c7 50%, #fce7f3 100%);
+        }
+
+        h1, h2, h3, .font-fredoka {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        .btn-toy {
+            transition: all 0.1s ease;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.12);
+        }
+        .btn-toy:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+        }
+
+        .btn-bounce {
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
+        }
+        .btn-bounce:active {
+            transform: scale(0.92);
+        }
+
+        .pop-in {
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .float-slow {
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+
+        .audio-speaking {
+            animation: pulseSpeaker 1s infinite alternate;
+        }
+
+        @keyframes pulseSpeaker {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px #facc15); }
+            100% { transform: scale(1.1); filter: drop-shadow(0 0 10px #22c55e); }
+        }
+
+        #drawingCanvas {
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        .toy-bg-element {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.25;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body class="h-full flex flex-col justify-between max-w-md md:max-w-xl mx-auto text-slate-800 relative shadow-2xl overflow-hidden select-none">
+    <div class="toy-bg-element top-3 left-4 text-candy-pink text-3xl float-slow"><i class="fa-solid fa-shapes"></i></div>
+    <div class="toy-bg-element top-12 right-6 text-sunny-400 text-2xl float-slow" style="animation-delay: 1s;"><i class="fa-solid fa-star"></i></div>
+    <div class="toy-bg-element bottom-16 left-6 text-candy-cyan text-3xl float-slow" style="animation-delay: 1.5s;"><i class="fa-solid fa-cube"></i></div>
+    <div class="toy-bg-element bottom-24 right-5 text-candy-lime text-3xl float-slow" style="animation-delay: 0.5s;"><i class="fa-solid fa-puzzle-piece"></i></div>
+
+    <!-- Encouragement Feedback Modal -->
+    <div id="feedbackModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-amber-100 to-yellow-200 rounded-3xl p-6 border-4 border-amber-400 text-center shadow-2xl max-w-xs w-full pop-in space-y-4">
+            <div id="feedbackIcon" class="text-6xl animate-bounce">🌟</div>
+            <h3 id="feedbackTitle" class="text-3xl font-fredoka font-black text-amber-700">MasyaAllah!</h3>
+            <p id="feedbackMessage" class="text-slate-700 font-bold text-lg">Pintar sekali! Ayo belajar lagi ✨</p>
+            <button onclick="closeFeedbackModal()" class="w-full bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-3 rounded-2xl shadow-md btn-toy border-b-4 border-lime-600 text-lg">
+                Lanjut Belajar!
+            </button>
+        </div>
+    </div>
+
+    <!-- PWA Install Modal Popup -->
+    <div id="pwaInstallModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-amber-100 to-yellow-200 rounded-3xl p-5 border-4 border-amber-400 text-center shadow-2xl max-w-xs w-full pop-in space-y-3">
+            <div class="text-5xl animate-bounce">📱</div>
+            <h3 class="text-2xl font-fredoka font-black text-amber-900">Pasang Aplikasi</h3>
+            <p class="text-slate-700 font-bold text-xs leading-relaxed">
+                Pasang <span class="text-pink-600 font-black">Baca Cepat</span> di HP agar bisa belajar tanpa internet (Offline)!
+            </p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closePwaModal()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-slate-400">
+                    Nanti
+                </button>
+                <button onclick="triggerPwaInstall()" class="w-2/3 bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-2.5 rounded-2xl text-sm shadow-md btn-toy border-b-4 border-lime-600 flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> INSTAL SEKARANG
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="p-3 bg-white/95 backdrop-blur-md border-b-4 border-amber-300 flex items-center justify-between z-20 shrink-0 shadow-sm">
+        <div class="flex items-center gap-2">
+            <!-- Profile Avatar Button -->
+            <button onclick="navigateTo('home')" class="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 px-3 py-1.5 rounded-2xl border-2 border-amber-400 transition-all btn-bounce shadow-sm">
+                <div class="w-9 h-9 rounded-full bg-sunny-300 border-2 border-white shadow-sm shrink-0 overflow-hidden flex items-center justify-center">
+                    <img id="headerAvatarImg" class="w-full h-full object-cover hidden" alt="Profile Avatar" />
+                    <svg id="headerAvatarSvg" class="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="#fde047" />
+                        <path d="M25 35 Q50 20 75 35 L75 48 Q50 42 25 48 Z" fill="#2ec4b6" />
+                        <circle cx="50" cy="58" r="28" fill="#fce7f3" />
+                        <circle cx="40" cy="55" r="3" fill="#1e293b" />
+                        <circle cx="60" cy="55" r="3" fill="#1e293b" />
+                        <path d="M42 66 Q50 74 58 66" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="text-left">
+                    <span id="headerChildName" class="font-fredoka font-black text-sm text-amber-900 block max-w-[90px] truncate leading-none">Anak Soleh</span>
+                    <span class="text-[9px] font-bold text-amber-600 uppercase tracking-wider">🏠 Beranda</span>
+                </div>
+            </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Global Audio Indicator Button -->
+            <button id="globalAudioBtn" onclick="speakText('Suara audio aktif!')" class="bg-amber-300 hover:bg-amber-400 text-amber-900 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm btn-toy border-b-4 border-amber-500" title="Audio Suara Aktif">
+                <i class="fa-solid fa-volume-high" id="speakerIcon"></i>
+            </button>
+            <button id="btnHome" onclick="navigateTo('home')" class="hidden bg-candy-cyan hover:bg-cyan-600 text-white w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-md btn-toy border-b-4 border-cyan-700">
+                <i class="fa-solid fa-house text-lg"></i>
+            </button>
+            <button onclick="openParentModal()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs btn-toy border-b-4 border-amber-400">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 relative overflow-hidden flex flex-col justify-between p-3 z-10">
+
+        <!-- VIEW: ONBOARDING / SPLASH -->
+        <section id="viewOnboarding" class="h-full flex flex-col items-center justify-between py-2 text-center space-y-3 my-auto">
+            <div class="space-y-1 float-slow flex flex-col items-center">
+                <!-- Avatar Preview & Upload Trigger -->
+                <div class="relative group">
+                    <div class="w-28 h-28 bg-gradient-to-tr from-sunny-400 to-amber-300 rounded-3xl p-1.5 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden rotate-2">
+                        <img id="onboardAvatarImg" class="w-full h-full object-cover rounded-2xl hidden" alt="Foto Profil" />
+                        <svg id="onboardAvatarSvg" class="w-full h-full" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="#fde047" />
+                            <path d="M20 38 Q50 20 80 38 L80 50 Q50 42 20 50 Z" fill="#2ec4b6" />
+                            <circle cx="50" cy="60" r="30" fill="#fed7aa" />
+                            <circle cx="38" cy="56" r="4" fill="#1e293b" />
+                            <circle cx="62" cy="56" r="4" fill="#1e293b" />
+                            <circle cx="33" cy="62" r="3" fill="#f87171" opacity="0.6" />
+                            <circle cx="67" cy="62" r="3" fill="#f87171" opacity="0.6" />
+                            <path d="M40 68 Q50 78 60 68" stroke="#1e293b" stroke-width="4" fill="none" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <!-- Upload Photo Badge Button -->
+                    <label for="avatarUploadInput" class="absolute -bottom-2 -right-2 bg-candy-pink hover:bg-pink-600 text-white w-9 h-9 rounded-full border-2 border-white shadow-md flex items-center justify-center cursor-pointer btn-bounce">
+                        <i class="fa-solid fa-camera text-sm"></i>
+                    </label>
+                    <input type="file" id="avatarUploadInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+                </div>
+
+                <h1 class="text-3xl font-fredoka font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 pt-2">
+                    BACA CEPAT & SERU
+                </h1>
+                <p class="text-xs text-amber-900 font-bold bg-amber-200/80 inline-block px-3 py-1 rounded-full border border-amber-300">
+                    Assalamu'alaikum! Yuk, Belajar Membaca Seru banget! 👋
+                </p>
+            </div>
+
+            <!-- Name Input Box -->
+            <div class="w-full bg-white/90 backdrop-blur-md rounded-3xl p-4 shadow-xl border-4 border-amber-300 space-y-3">
+                <label class="block text-xs font-black text-amber-900 font-fredoka">Siapa nama anak soleh hari ini?</label>
+                <input type="text" id="inputChildName" placeholder="Tulis namamu disini..." 
+                       class="w-full text-center text-xl font-fredoka font-black py-3 px-4 rounded-2xl bg-amber-50 border-4 border-amber-200 focus:outline-none focus:border-candy-pink text-pink-600 placeholder:font-normal placeholder:text-slate-400 shadow-inner">
+                
+                <button onclick="submitNameAndStart()" class="w-full bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-3.5 rounded-2xl shadow-lg btn-toy border-b-4 border-lime-600 text-xl flex items-center justify-center gap-2">
+                    <span>▶ MULAI BELAJAR & AUDIO</span>
+                </button>
+            </div>
+
+            <p class="text-[11px] text-slate-600 font-black bg-white/60 px-3 py-1 rounded-full">Suara interaktif aktif di setiap tombol! 🔊</p>
+        </section>
+
+        <!-- VIEW: MAIN DASHBOARD -->
+        <section id="viewHome" class="hidden h-full flex flex-col justify-between py-1">
+            <div class="bg-gradient-to-r from-amber-200 via-yellow-100 to-pink-100 rounded-3xl p-3 border-4 border-amber-300 shadow-sm flex items-center gap-3">
+                <div class="w-12 h-12 bg-sunny-300 rounded-2xl flex-shrink-0 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
+                    <img id="dashAvatarImg" class="w-full h-full object-cover hidden" alt="Avatar Dashboard" />
+                    <svg id="dashAvatarSvg" class="w-10 h-10" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="#fde047" />
+                        <path d="M22 38 Q50 22 78 38 L78 48 Q50 42 22 48 Z" fill="#2ec4b6" />
+                        <circle cx="50" cy="58" r="28" fill="#fed7aa" />
+                        <circle cx="39" cy="55" r="3.5" fill="#1e293b" />
+                        <circle cx="61" cy="55" r="3.5" fill="#1e293b" />
+                        <path d="M42 66 Q50 74 58 66" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-base font-fredoka font-black text-slate-800">Hai <span id="dashChildName" class="text-candy-pink">Anak Soleh</span>! 👋</h2>
+                    <p class="text-xs text-slate-600 font-bold">Tekan tombol untuk mendengarkan suara:</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Buttons Grid -->
+            <div class="grid grid-cols-2 gap-2.5 my-auto pt-1">
+                <button onclick="navigateTo('alfabet')" class="bg-gradient-to-b from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white rounded-3xl p-3.5 shadow-md border-b-4 border-sky-700 flex flex-col items-center justify-center gap-1 btn-toy">
+                    <span class="text-3xl">⌨️</span>
+                    <span class="font-fredoka font-black text-base tracking-wide">KEYPAD & HURUF</span>
+                    <span class="text-[10px] bg-white/30 px-2 py-0.5 rounded-full font-extrabold">Suara Tiap Ketik</span>
+                </button>
+
+                <button onclick="navigateTo('dengarkan')" class="bg-gradient-to-b from-candy-pink to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-3xl p-3.5 shadow-md border-b-4 border-pink-800 flex flex-col items-center justify-center gap-1 btn-toy">
+                    <span class="text-3xl">👂</span>
+                    <span class="font-fredoka font-black text-base tracking-wide">DENGARKAN</span>
+                    <span class="text-[10px] bg-white/30 px-2 py-0.5 rounded-full font-extrabold">Tebak & Susun</span>
+                </button>
+
+                <button onclick="navigateTo('tulis')" class="bg-gradient-to-b from-candy-lime to-lime-600 hover:from-lime-600 hover:to-lime-700 text-slate-900 rounded-3xl p-3.5 shadow-md border-b-4 border-lime-800 flex flex-col items-center justify-center gap-1 btn-toy">
+                    <span class="text-3xl">✏️</span>
+                    <span class="font-fredoka font-black text-base tracking-wide">TULIS BEBAS</span>
+                    <span class="text-[10px] bg-black/15 px-2 py-0.5 rounded-full font-extrabold">Suara Coretan</span>
+                </button>
+
+                <button onclick="navigateTo('baca')" class="bg-gradient-to-b from-sunny-300 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 rounded-3xl p-3.5 shadow-md border-b-4 border-amber-600 flex flex-col items-center justify-center gap-1 btn-toy">
+                    <span class="text-3xl">📖</span>
+                    <span class="font-fredoka font-black text-base tracking-wide">BACA & EJA</span>
+                    <span class="text-[10px] bg-black/15 px-2 py-0.5 rounded-full font-extrabold">Suara Mengeja</span>
+                </button>
+
+                <button onclick="navigateTo('doa')" class="col-span-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-3xl p-3 shadow-md border-b-4 border-purple-800 flex items-center justify-center gap-3 btn-toy">
+                    <span class="text-2xl">🤲</span>
+                    <div class="text-left">
+                        <p class="font-fredoka font-black text-base leading-tight">DOA HARIAN BERANUM</p>
+                        <p class="text-[10px] opacity-90 font-bold">Audio Baca Doa Otomatis & Suara Jelas</p>
+                    </div>
+                </button>
+            </div>
+
+            <div class="text-center bg-white/80 rounded-2xl p-2 border-2 border-amber-300 shadow-sm">
+                <p class="text-xs font-black text-amber-800 font-fredoka">“Setiap ketikan bersuara: Belajar makin asyik dan ceria!” ✨</p>
+            </div>
+        </section>
+
+        <!-- VIEW: ALFABET & KEYPAD NUMBER INTERACTIVE -->
+        <section id="viewAlfabet" class="hidden h-full flex flex-col justify-between gap-1.5">
+            <!-- Assembled Word & Audio Controls -->
+            <div class="flex-1 bg-white rounded-3xl p-3 border-4 border-sky-300 shadow-md text-center flex flex-col items-center justify-center relative overflow-hidden min-h-[140px] gap-2">
+                <div class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-widest">KATA / ANGKA TERKETIK:</div>
+                <span id="alphabetDisplayBig" class="text-4xl md:text-6xl font-fredoka font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 pop-in tracking-wider break-all max-w-full px-2">A</span>
+                
+                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                   
+                    </button>
+                    <button onclick="speakAssembledWord()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 px-3.5 py-1 rounded-full text-xs font-fredoka font-bold flex items-center gap-1 btn-toy border-b-2 border-lime-600">
+                        <i class="fa-solid fa-volume-high"></i> Baca Kata
+                    </button>
+                    <button onclick="clearAssembledWord()" class="bg-rose-400 hover:bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-fredoka font-bold flex items-center gap-1 btn-toy border-b-2 border-rose-600">
+                        <i class="fa-solid fa-trash"></i> Hapus
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Switcher: Keypad Angka vs Alfabet Huruf -->
+            <div class="flex gap-1">
+                <button id="tabHurufBtn" onclick="switchKeypadTab('huruf')" class="flex-1 bg-sky-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-sky-700">🔤 Keypad Huruf (A-Z)</button>
+                <button id="tabAngkaBtn" onclick="switchKeypadTab('angka')" class="flex-1 bg-amber-200 text-amber-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-amber-300">🔢 Keypad Angka (0-9)</button>
+            </div>
+
+            <!-- Keyboard Layout Container -->
+            <div id="keypadContainer" class="shrink-0 py-1">
+                <!-- Alphabet Grid -->
+                <div id="alphabetGrid" class="grid grid-cols-6 gap-1"></div>
+                <!-- Number Keypad Grid -->
+                <div id="numberGrid" class="hidden grid grid-cols-3 gap-2 max-w-xs mx-auto"></div>
+            </div>
+        </section>
+
+        <!-- VIEW: DENGARKAN & TULIS -->
+        <section id="viewDengarkan" class="hidden h-full flex flex-col justify-between gap-2">
+            <div class="bg-gradient-to-b from-pink-100 to-orange-100 rounded-3xl p-3 border-4 border-candy-pink text-center space-y-2 shadow-sm">
+                <span class="text-xs font-fredoka font-black text-pink-700 bg-white px-3 py-1 rounded-full border border-pink-300">Mode Dengarkan Audio</span>
+                <p class="text-xs text-slate-700 font-bold">Dengarkan kata, lalu susun hurufnya!</p>
+                
+                <div class="flex justify-center my-1">
+                    <button onclick="playTargetWordAudio()" class="w-16 h-16 bg-gradient-to-tr from-candy-pink to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full flex items-center justify-center text-2xl shadow-lg border-4 border-white btn-bounce">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="playTargetWordAudio()" class="bg-white text-pink-600 text-xs font-fredoka font-black px-4 py-1.5 rounded-xl border-2 border-pink-300 shadow-sm btn-bounce flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right"></i> PUTAR SUARA KATA
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-3 border-4 border-slate-200 text-center space-y-1 shadow-inner">
+                <p class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-wider">SUKU/HURUF DIPILIH:</p>
+                <div id="wordSlots" class="flex items-center justify-center gap-2 min-h-[48px] flex-wrap">
+                    <!-- Slots dynamic -->
+                </div>
+            </div>
+
+            <div id="listenLetterOptions" class="grid grid-cols-7 gap-1.5 bg-amber-100 p-2 rounded-2xl border-2 border-amber-300">
+                <!-- Dynamic Letter Keys -->
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="resetListenInput()" class="w-1/3 bg-slate-300 text-slate-800 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-slate-400">
+                    🗑 HAPUS
+                </button>
+                <button onclick="checkListenAnswer()" class="w-2/3 bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-2.5 rounded-2xl text-sm shadow-md btn-toy border-b-4 border-lime-600">
+                    ✓ EJA & PERIKSA
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW: TULIS BEBAS CANVAS -->
+        <section id="viewTulis" class="hidden h-full flex flex-col justify-between gap-2">
+            <div class="bg-white px-4 py-2 rounded-2xl border-4 border-lime-400 text-center flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-[10px] font-fredoka font-black text-slate-400">CONTOH KATA DITULIS:</span>
+                    <h3 id="tracingTargetText" class="text-2xl font-fredoka font-black tracking-wider transition-colors duration-300">MATA</h3>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="playTracingTargetWordSound()" class="w-8 h-8 bg-sunny-400 hover:bg-sunny-500 rounded-xl text-slate-900 font-bold text-xs border border-amber-500 shadow-sm"><i class="fa-solid fa-volume-high"></i></button>
+                    <button onclick="changeTracingTarget(-1)" class="w-8 h-8 bg-amber-100 hover:bg-amber-200 rounded-xl text-amber-900 font-bold text-xs border border-amber-300"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="changeTracingTarget(1)" class="w-8 h-8 bg-amber-100 hover:bg-amber-200 rounded-xl text-amber-900 font-bold text-xs border border-amber-300"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="flex-1 bg-white rounded-3xl border-4 border-lime-500 shadow-inner relative overflow-hidden min-h-[200px]">
+                <canvas id="drawingCanvas" class="w-full h-full block rounded-2xl"></canvas>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 bg-white/90 p-2 rounded-2xl border-2 border-amber-300 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <button onclick="setBrushColor('#22c55e')" class="w-7 h-7 rounded-full bg-softgreen-500 border-2 border-white shadow-md btn-bounce"></button>
+                    <button onclick="setBrushColor('#38bdf8')" class="w-7 h-7 rounded-full bg-sky-400 border-2 border-white shadow-md btn-bounce"></button>
+                    <button onclick="setBrushColor('#fb923c')" class="w-7 h-7 rounded-full bg-peach-400 border-2 border-white shadow-md btn-bounce"></button>
+                    <button onclick="setBrushColor('#eab308')" class="w-7 h-7 rounded-full bg-sunny-500 border-2 border-white shadow-md btn-bounce"></button>
+                    <button onclick="setBrushColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-white shadow-md btn-bounce"></button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="clearCanvas()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-3 py-1.5 rounded-xl font-fredoka font-black text-xs btn-toy border-b-2 border-slate-400">
+                        🗑 HAPUS
+                    </button>
+                    <button onclick="finishCanvasWriting()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 px-4 py-1.5 rounded-xl font-fredoka font-black text-xs btn-toy border-b-2 border-lime-600">
+                        ✓ SELESAI
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: BACA KATA & SUARA MENGEJA -->
+        <section id="viewBaca" class="hidden h-full flex flex-col justify-between gap-2">
+            <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
+                <button onclick="setWordCategory('kata_mudah')" class="cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500">Kata Utama</button>
+                <button onclick="setWordCategory('kata_sehari')" class="cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200">Sehari-hari</button>
+                <button onclick="setWordCategory('kata_islami')" class="cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200">Kata Islami</button>
+            </div>
+
+            <div class="bg-white rounded-3xl p-4 border-4 border-sunny-300 shadow-lg text-center flex flex-col items-center justify-center flex-1 my-1 relative">
+                <div id="syllableContainer" class="flex items-center gap-2 text-3xl md:text-4xl font-fredoka font-black text-slate-800 tracking-wider flex-wrap justify-center">
+                    <!-- Dynamic Interactive Syllable Cards -->
+                </div>
+
+                <div id="fullWordDisplay" class="text-4xl md:text-5xl font-fredoka font-black text-candy-pink mt-3 pop-in">
+                    BOLA
+                </div>
+
+                <div class="flex items-center gap-2 mt-3">
+                    <button onclick="playSyllableStepByStep()" class="bg-sunny-400 hover:bg-sunny-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-amber-600 text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-spell-check text-sm"></i>
+                        <span>SUARA MENGEJA</span>
+                    </button>
+                    <button onclick="playFullWordDirect()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-lime-600 text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-volume-high text-sm"></i>
+                        <span>BACA UTUH</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2">
+                <button onclick="prevWord()" class="flex-1 bg-amber-200 hover:bg-amber-300 text-amber-900 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-amber-400 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-arrow-left"></i> SEBELUMNYA
+                </button>
+                <button onclick="nextWord()" class="flex-1 bg-candy-pink hover:bg-pink-600 text-white font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-pink-700 flex items-center justify-center gap-1">
+                    BERIKUTNYA <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- VIEW: DOA HARIAN WITH AUDIO -->
+        <section id="viewDoa" class="hidden h-full flex flex-col justify-between gap-2">
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-3xl p-3 shadow-md text-center space-y-0.5 border-2 border-purple-300">
+                <span class="text-2xl">🤲</span>
+                <h3 class="font-fredoka font-black text-base">Doa Anak Soleh (Audio)</h3>
+                <p class="text-[10px] opacity-90 font-bold">Tekan tombol audio untuk mendengarkan doa!</p>
+            </div>
+
+            <div id="doaListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                <div class="bg-white p-3 rounded-3xl border-4 border-purple-200 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-fredoka font-black text-xs text-purple-600">Doa Sebelum Belajar</span>
+                        <button onclick="playDoaAudio('sebelum_belajar')" class="w-8 h-8 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center text-xs font-bold btn-bounce shadow-sm border border-purple-300">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <p class="text-right text-base font-extrabold text-slate-800 font-serif">رَبِّ زِدْنِي عِلْمًا وَارْزُقْنِي فَهْمًا</p>
+                    <p class="text-[10px] text-slate-500 italic">"Ya Allah, tambahkanlah aku ilmu dan berilah aku rezeki pemahaman."</p>
+                </div>
+
+                <div class="bg-white p-3 rounded-3xl border-4 border-sky-200 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-fredoka font-black text-xs text-sky-600">Doa Sesudah Belajar</span>
+                        <button onclick="playDoaAudio('sesudah_belajar')" class="w-8 h-8 bg-sky-100 text-sky-700 rounded-full flex items-center justify-center text-xs font-bold btn-bounce shadow-sm border border-sky-300">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <p class="text-right text-base font-extrabold text-slate-800 font-serif">اَلْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِيْنَ</p>
+                    <p class="text-[10px] text-slate-500 italic">"Segala puji bagi Allah, Tuhan semesta alam."</p>
+                </div>
+
+                <div class="bg-white p-3 rounded-3xl border-4 border-amber-200 shadow-sm space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-fredoka font-black text-xs text-amber-600">Doa Orang Tua</span>
+                        <button onclick="playDoaAudio('orang_tua')" class="w-8 h-8 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center text-xs font-bold btn-bounce shadow-sm border border-amber-300">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+                    <p class="text-right text-base font-extrabold text-slate-800 font-serif">رَبِّ اغْفِرْلِيْ وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِيْ صَغِيْرًا</p>
+                    <p class="text-[10px] text-slate-500 italic">"Ya Allah, ampunilah aku dan kedua orang tuaku, sayangilah mereka..."</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Parent Control Gate Modal -->
+    <div id="parentModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-5 border-4 border-slate-300 max-w-sm w-full space-y-3 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-fredoka font-black text-slate-800 text-sm">⚙️ Area Orang Tua & Pengaturan Suara</h3>
+                <button onclick="closeParentModal()" class="text-slate-400 font-bold text-lg">&times;</button>
+            </div>
+
+            <!-- Gate Challenge -->
+            <div id="parentGateChallenge" class="space-y-3">
+                <p class="text-xs text-slate-600 font-bold">Berapa hasil dari <span id="mathQ" class="font-black text-amber-600">3 + 4</span> ?</p>
+                <input type="number" id="mathAns" placeholder="Jawaban..." class="w-full text-center text-lg p-2 rounded-xl bg-slate-100 border border-slate-300 font-fredoka">
+                <button onclick="verifyParentGate()" class="w-full bg-candy-cyan text-white font-fredoka font-black py-2 rounded-xl text-xs btn-toy border-b-2 border-cyan-700">
+                    VERIFIKASI
+                </button>
+            </div>
+
+            <!-- Settings Content -->
+            <div id="parentSettings" class="hidden space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Anak Soleh:</label>
+                    <input type="text" id="parentChildNameInput" class="w-full p-2 bg-slate-100 rounded-xl border border-slate-300 font-bold text-slate-800">
+                </div>
+
+                <!-- Custom Photo Settings -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Foto Profil Anak:</label>
+                    <label for="parentAvatarUpload" class="block w-full text-center bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2 rounded-xl border border-amber-300 cursor-pointer">
+                        <i class="fa-solid fa-image"></i> Pilih Foto Dari HP
+                    </label>
+                    <input type="file" id="parentAvatarUpload" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+                </div>
+
+                <!-- Custom Words Manager -->
+                <div class="border-t pt-2 space-y-2">
+                    <label class="block font-black text-amber-900">Tambah Kata Sendiri (Custom):</label>
+                    <div class="flex gap-1.5">
+                        <input type="text" id="customWordInput" placeholder="Contoh: BAPAK, BUNGA" class="flex-1 p-2 bg-amber-50 rounded-xl border border-amber-300 uppercase font-bold text-slate-800">
+                        <button onclick="addCustomWordFromSettings()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black px-3 py-2 rounded-xl btn-toy border-b-2 border-lime-600 shrink-0">
+                            + TAMBAH
+                        </button>
+                    </div>
+                    
+                    <p class="text-[10px] text-slate-500 font-semibold">Daftar kata buatan sendiri:</p>
+                    <div id="customWordsList" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 bg-slate-50 rounded-xl border">
+                        <!-- Populated dynamic -->
+                    </div>
+                </div>
+
+                <div class="space-y-1 border-t pt-2">
+                    <label class="block font-bold text-slate-700">Kecepatan Suara Audio (Speech Rate):</label>
+                    <input type="range" id="speechRateRange" min="0.5" max="1.1" step="0.05" value="0.80" class="w-full" onchange="updateSpeechSettings()">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block font-bold text-slate-700">Nada Suara Audio (Pitch):</label>
+                    <input type="range" id="speechPitchRange" min="0.8" max="1.8" step="0.1" value="1.4" class="w-full" onchange="updateSpeechSettings()">
+                </div>
+
+                <button onclick="saveParentSettings()" class="w-full bg-candy-lime text-slate-900 font-fredoka font-black py-2.5 rounded-xl btn-toy border-b-2 border-lime-600">
+                    SIMPAN PENGATURAN
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Global App State
+        const state = {
+            childName: 'Anak Soleh',
+            profilePic: null, // Base64 profile picture string
+            activityCount: 0,
+            isAudioPlaying: false,
+            currentView: 'onboarding',
+            speechRate: 0.80,
+            speechPitch: 1.40,
+            currentCategory: 'kata_mudah',
+            currentWordIndex: 0,
+            assembledWord: '',
+            activeKeypadTab: 'huruf',
+            targetWordListen: '',
+            listenInputLetters: [],
+            tracingTargetIndex: 0,
+            tracingTargets: ['MATA', 'BOLA', 'IBU', 'AYAH', 'SAPI', 'NASI', 'BUKU', 'RUMAH'],
+            customWords: []
+        };
+
+        // Pronunciation mapping for digits in Indonesian
+        const numberSpeechMap = {
+            '0': 'Nol',
+            '1': 'Satu',
+            '2': 'Dua',
+            '3': 'Tiga',
+            '4': 'Empat',
+            '5': 'Lima',
+            '6': 'Enam',
+            '7': 'Tujuh',
+            '8': 'Delapan',
+            '9': 'Sembilan'
+        };
+
+        // Dataset for reading and listening modes
+        const wordDatabase = {
+            kata_mudah: [
+                { word: 'BOLA', syllables: ['BO', 'LA'] },
+                { word: 'IBU', syllables: ['I', 'BU'] },
+                { word: 'AYAH', syllables: ['A', 'YAH'] },
+                { word: 'BUKU', syllables: ['BU', 'KU'] },
+                { word: 'MEJA', syllables: ['ME', 'JA'] },
+                { word: 'MATA', syllables: ['MA', 'TA'] },
+                { word: 'SAPI', syllables: ['SA', 'PI'] },
+                { word: 'ROTI', syllables: ['RO', 'TI'] },
+                { word: 'NASI', syllables: ['NA', 'SI'] },
+                { word: 'TOPI', syllables: ['TO', 'PI'] }
+            ],
+            kata_sehari: [
+                { word: 'KUCING', syllables: ['KU', 'CING'] },
+                { word: 'BAJU', syllables: ['BA', 'JU'] },
+                { word: 'KAKI', syllables: ['KA', 'KI'] },
+                { word: 'TANGAN', syllables: ['TA', 'NGAN'] },
+                { word: 'RUMAH', syllables: ['RU', 'MAH'] },
+                { word: 'SEPATU', syllables: ['SE', 'PA', 'TU'] },
+                { word: 'AIR', syllables: ['A', 'IR'] }
+            ],
+            kata_islami: [
+                { word: 'ALLAH', syllables: ['AL', 'LAH'] },
+                { word: 'MASJID', syllables: ['MAS', 'JID'] },
+                { word: 'DOA', syllables: ['DO', 'A'] },
+                { word: 'IMAN', syllables: ['I', 'MAN'] },
+                { word: 'ISLAM', syllables: ['IS', 'LAM'] },
+                { word: 'SALAM', syllables: ['SA', 'LAM'] },
+                { word: 'HALAL', syllables: ['HA', 'LAL'] },
+                { word: 'AMAL', syllables: ['A', 'MAL'] }
+            ]
+        };
+
+        // PWA deferred prompt hold
+        let deferredPwaPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPwaPrompt = e;
+            // Show PWA install modal if not installed
+            setTimeout(() => {
+                const pwaModal = document.getElementById('pwaInstallModal');
+                if (pwaModal) pwaModal.classList.remove('hidden');
+            }, 3000);
+        });
+
+        function triggerPwaInstall() {
+            if (deferredPwaPrompt) {
+                deferredPwaPrompt.prompt();
+                deferredPwaPrompt.userChoice.then(() => {
+                    deferredPwaPrompt = null;
+                    closePwaModal();
+                });
+            } else {
+                closePwaModal();
+            }
+        }
+
+        function closePwaModal() {
+            document.getElementById('pwaInstallModal').classList.add('hidden');
+        }
+
+        // Web Audio Synthesizer for Keypad Tones, Clicks and Chimes
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playKeypadPitch(key) {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                // Map key to a musical frequency
+                let freq = 400;
+                if (!isNaN(key)) {
+                    freq = 300 + parseInt(key) * 40;
+                } else {
+                    const charCode = key.toUpperCase().charCodeAt(0);
+                    freq = 250 + (charCode - 65) * 15;
+                }
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+
+                osc.start();
+                osc.stop(ctx.currentTime + 0.12);
+            } catch (e) {}
+        }
+
+        function playChimeSound(type = 'pop') {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'pop') {
+                    osc.frequency.setValueAtTime(450, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.08);
+                } else if (type === 'success') {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } else if (type === 'pencil') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(200, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                }
+            } catch (e) {}
+        }
+
+        function speakText(text, onCompleteCallback) {
+            if (!('speechSynthesis' in window)) {
+                if (onCompleteCallback) onCompleteCallback();
+                return;
+            }
+
+            setAudioLock(true);
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = state.speechRate;
+            utterance.pitch = state.speechPitch;
+
+            utterance.onend = () => {
+                setAudioLock(false);
+                if (onCompleteCallback) onCompleteCallback();
+            };
+
+            utterance.onerror = () => {
+                setAudioLock(false);
+                if (onCompleteCallback) onCompleteCallback();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function setAudioLock(locked) {
+            state.isAudioPlaying = locked;
+            const speakerIcon = document.getElementById('speakerIcon');
+            if (speakerIcon) {
+                if (locked) {
+                    speakerIcon.classList.add('audio-speaking');
+                } else {
+                    speakerIcon.classList.remove('audio-speaking');
+                }
+            }
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                state.profilePic = e.target.result;
+                updateAvatarElements();
+                playChimeSound('success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateAvatarElements() {
+            const imgs = ['headerAvatarImg', 'onboardAvatarImg', 'dashAvatarImg'];
+            const svgs = ['headerAvatarSvg', 'onboardAvatarSvg', 'dashAvatarSvg'];
+
+            if (state.profilePic) {
+                imgs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.src = state.profilePic;
+                        el.classList.remove('hidden');
+                    }
+                });
+                svgs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+            } else {
+                imgs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('hidden');
+                });
+                svgs.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('hidden');
+                });
+            }
+        }
+
+        function autoSyllableSplit(word) {
+            const res = [];
+            let temp = '';
+            for (let i = 0; i < word.length; i++) {
+                temp += word[i];
+                if (temp.length >= 2 && i < word.length - 1) {
+                    res.push(temp);
+                    temp = '';
+                }
+            }
+            if (temp) res.push(temp);
+            return res.length > 0 ? res : [word];
+        }
+
+        function addCustomWordFromSettings() {
+            const input = document.getElementById('customWordInput');
+            const val = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+            if (!val) return;
+
+            if (state.customWords.includes(val)) {
+                speakText('Kata ini sudah ada.');
+                return;
+            }
+
+            state.customWords.push(val);
+            input.value = '';
+
+            // Add to database
+            const syllables = autoSyllableSplit(val);
+            wordDatabase.kata_mudah.unshift({ word: val, syllables: syllables });
+
+            if (!state.tracingTargets.includes(val)) {
+                state.tracingTargets.unshift(val);
+            }
+
+            renderCustomWordsList();
+            playChimeSound('success');
+            speakText(`Kata ${val} berhasil ditambahkan!`);
+        }
+
+        function deleteCustomWord(word) {
+            state.customWords = state.customWords.filter(w => w !== word);
+            wordDatabase.kata_mudah = wordDatabase.kata_mudah.filter(w => w.word !== word);
+            state.tracingTargets = state.tracingTargets.filter(w => w !== word);
+            renderCustomWordsList();
+        }
+
+        function renderCustomWordsList() {
+            const container = document.getElementById('customWordsList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (state.customWords.length === 0) {
+                container.innerHTML = '<span class="text-slate-400 italic text-[10px]">Belum ada kata buatan sendiri</span>';
+                return;
+            }
+
+            state.customWords.forEach(w => {
+                const badge = document.createElement('span');
+                badge.className = 'bg-amber-200 text-amber-900 font-fredoka font-black px-2 py-0.5 rounded-lg flex items-center gap-1 text-[11px]';
+                badge.innerHTML = `${w} <button onclick="deleteCustomWord('${w}')" class="text-rose-600 hover:text-rose-800 font-black">&times;</button>`;
+                container.appendChild(badge);
+            });
+        }
+
+        function navigateTo(viewId) {
+            playChimeSound('pop');
+            state.currentView = viewId;
+
+            const views = ['viewOnboarding', 'viewHome', 'viewAlfabet', 'viewDengarkan', 'viewTulis', 'viewBaca', 'viewDoa'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById('view' + viewId.charAt(0).toUpperCase() + viewId.slice(1));
+            if (target) target.classList.remove('hidden');
+
+            const btnHome = document.getElementById('btnHome');
+            if (viewId === 'home' || viewId === 'onboarding') {
+                btnHome.classList.add('hidden');
+            } else {
+                btnHome.classList.remove('hidden');
+            }
+
+            if (viewId !== 'onboarding' && viewId !== 'home') {
+                registerActivityStep();
+            }
+
+            // Announce current view via TTS
+            const announcements = {
+                'alfabet': 'Mode Keypad dan Huruf. Tekan tombol untuk mendengar suara!',
+                'dengarkan': 'Mode Dengarkan dan Tulis!',
+                'tulis': 'Mode Tulis Bebas di Layar!',
+                'baca': 'Mode Baca dan Mengeja Kata!',
+                'doa': 'Mode Doa Anak Soleh!'
+            };
+
+            if (announcements[viewId]) {
+                speakText(announcements[viewId]);
+            }
+
+            if (viewId === 'alfabet') initAlphabetView();
+            if (viewId === 'dengarkan') initDengarkanView();
+            if (viewId === 'tulis') initTulisCanvas();
+            if (viewId === 'baca') renderCurrentWordBoard();
+        }
+
+        function registerActivityStep() {
+            state.activityCount++;
+            if (state.activityCount % 6 === 0) {
+                setTimeout(() => {
+                    speakChildPraise();
+                }, 800);
+            }
+        }
+
+        function speakChildPraise() {
+            const praises = [
+                `${state.childName}, kamu hebat sekali!`,
+                `MasyaAllah ${state.childName}, pintar sekali mendengar dan belajar!`,
+                `Luar biasa ${state.childName}! Semangat terus ya!`
+            ];
+            const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+            showFeedbackModal('🌟', 'Pintar Sekali!', randomPraise);
+            speakText(randomPraise);
+        }
+
+        function showFeedbackModal(icon, title, message) {
+            document.getElementById('feedbackIcon').innerText = icon;
+            document.getElementById('feedbackTitle').innerText = title;
+            document.getElementById('feedbackMessage').innerText = message;
+            document.getElementById('feedbackModal').classList.remove('hidden');
+            playChimeSound('success');
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            // Otomatis ganti ke soal berikutnya pada mode dengarkan
+            if (state.currentView === 'dengarkan') {
+                initDengarkanView();
+            }
+        }
+
+        function submitNameAndStart() {
+            const input = document.getElementById('inputChildName').value.trim();
+            if (input.length > 0) {
+                state.childName = input;
+            }
+            document.getElementById('headerChildName').innerText = state.childName;
+            document.getElementById('dashChildName').innerText = state.childName;
+
+            speakText(`Bismillahirrahmanirrahim. Assalamu'alaikum ${state.childName}, yuk kita belajar membaca dan mendengar suara!`, () => {
+                navigateTo('home');
+            });
+        }
+
+        function initAlphabetView() {
+            renderAlphabetGrid();
+            renderNumberGrid();
+            state.assembledWord = '';
+            document.getElementById('alphabetDisplayBig').innerText = '-';
+        }
+
+        function switchKeypadTab(tab) {
+            playChimeSound('pop');
+            state.activeKeypadTab = tab;
+
+            const tabHurufBtn = document.getElementById('tabHurufBtn');
+            const tabAngkaBtn = document.getElementById('tabAngkaBtn');
+            const alphabetGrid = document.getElementById('alphabetGrid');
+            const numberGrid = document.getElementById('numberGrid');
+
+            if (tab === 'huruf') {
+                tabHurufBtn.className = 'flex-1 bg-sky-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-sky-700';
+                tabAngkaBtn.className = 'flex-1 bg-amber-200 text-amber-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-amber-300';
+                alphabetGrid.classList.remove('hidden');
+                numberGrid.classList.add('hidden');
+                speakText('Keypad Huruf A sampai Z');
+            } else {
+                tabHurufBtn.className = 'flex-1 bg-sky-200 text-sky-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-sky-300';
+                tabAngkaBtn.className = 'flex-1 bg-amber-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-amber-700';
+                alphabetGrid.classList.add('hidden');
+                numberGrid.classList.remove('hidden');
+                speakText('Keypad Angka Nol sampai Sembilan');
+            }
+        }
+
+        function renderAlphabetGrid() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+
+            const colorPalette = [
+                'bg-rose-400 text-white border-rose-600',
+                'bg-sky-400 text-white border-sky-600',
+                'bg-amber-400 text-slate-900 border-amber-600',
+                'bg-lime-400 text-slate-900 border-lime-600',
+                'bg-purple-400 text-white border-purple-600',
+                'bg-pink-400 text-white border-pink-600',
+                'bg-teal-400 text-slate-900 border-teal-600'
+            ];
+
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            alphabet.forEach((letter, idx) => {
+                const colorClass = colorPalette[idx % colorPalette.length];
+                const btn = document.createElement('button');
+                btn.className = `${colorClass} font-fredoka font-black text-lg py-2 rounded-xl border-b-4 shadow-sm btn-toy flex items-center justify-center`;
+                btn.innerText = letter;
+                btn.onclick = () => selectKeypadKey(letter);
+                grid.appendChild(btn);
+            });
+        }
+
+        function renderNumberGrid() {
+            const grid = document.getElementById('numberGrid');
+            grid.innerHTML = '';
+
+            const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+            numbers.forEach((num) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-gradient-to-b from-sunny-300 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-fredoka font-black text-2xl py-3 rounded-2xl border-b-4 border-amber-600 shadow-md btn-toy flex flex-col items-center justify-center';
+                btn.innerHTML = `<span>${num}</span><span class="text-[9px] font-bold text-amber-900">${numberSpeechMap[num]}</span>`;
+                btn.onclick = () => selectKeypadKey(num);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectKeypadKey(key) {
+            playKeypadPitch(key);
+
+            if (state.assembledWord.length >= 12) {
+                state.assembledWord = key;
+            } else {
+                state.assembledWord += key;
+            }
+
+            document.getElementById('alphabetDisplayBig').innerText = state.assembledWord;
+
+            // Immediate speech for the key pressed
+            if (numberSpeechMap[key]) {
+                speakText(numberSpeechMap[key]);
+            } else {
+                speakText(key);
+            }
+        }
+
+        function clearAssembledWord() {
+            playChimeSound('pop');
+            state.assembledWord = '';
+            document.getElementById('alphabetDisplayBig').innerText = '-';
+            speakText('Hapus');
+        }
+
+        function speakAssembledWord() {
+            if (!state.assembledWord || state.assembledWord === '-') {
+                speakText('Ketik huruf atau angka terlebih dahulu.');
+                return;
+            }
+            speakText(state.assembledWord);
+        }
+
+        function ejaWordDetailed() {
+            if (!state.assembledWord || state.assembledWord === '-') return;
+
+            const chars = state.assembledWord.split('');
+            let speechParts = [];
+
+            chars.forEach(c => {
+                if (numberSpeechMap[c]) {
+                    speechParts.push(numberSpeechMap[c]);
+                } else {
+                    speechParts.push(c);
+                }
+            });
+
+            const spellText = speechParts.join(' ... ');
+            speakText(`Eja: ${spellText} ... Dibaca: ${state.assembledWord}`);
+        }
+
+        function initDengarkanView() {
+            // Select random word from current category (berbeda dari soal sebelumnya)
+            const list = wordDatabase[state.currentCategory];
+            let randomIndex;
+            if (list.length > 1) {
+                do {
+                    randomIndex = Math.floor(Math.random() * list.length);
+                } while (list[randomIndex].word === state.targetWordListen);
+            } else {
+                randomIndex = 0;
+            }
+            state.targetWordListen = list[randomIndex].word;
+
+            state.listenInputLetters = [];
+            renderWordSlots();
+            renderListenOptions();
+
+            setTimeout(() => {
+                playTargetWordAudio();
+            }, 300);
+        }
+
+        function playTargetWordAudio() {
+            speakText(`Dengarkan kata berikut: ... ${state.targetWordListen}`);
+        }
+
+        function renderWordSlots() {
+            const container = document.getElementById('wordSlots');
+            container.innerHTML = '';
+
+            const len = state.targetWordListen.length;
+            for (let i = 0; i < len; i++) {
+                const char = state.listenInputLetters[i] || '';
+                const box = document.createElement('div');
+                box.className = 'w-10 h-10 md:w-12 md:h-12 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center font-fredoka font-black text-xl text-pink-600 shadow-inner pop-in';
+                box.innerText = char;
+                container.appendChild(box);
+            }
+        }
+
+        function renderListenOptions() {
+            const container = document.getElementById('listenLetterOptions');
+            container.innerHTML = '';
+
+            // Generate letters including target letters
+            const targetChars = state.targetWordListen.split('');
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            const randomExtras = alphabet.filter(c => !targetChars.includes(c)).sort(() => 0.5 - Math.random()).slice(0, 14 - targetChars.length);
+            
+            const allOptionLetters = [...targetChars, ...randomExtras].sort(() => 0.5 - Math.random());
+
+            allOptionLetters.forEach(letter => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-white hover:bg-sky-100 text-slate-800 font-fredoka font-black text-base py-2 rounded-xl border-2 border-amber-300 shadow-sm btn-bounce';
+                btn.innerText = letter;
+                btn.onclick = () => chooseListenLetter(letter);
+                container.appendChild(btn);
+            });
+        }
+
+        function chooseListenLetter(letter) {
+            if (state.listenInputLetters.length < state.targetWordListen.length) {
+                playKeypadPitch(letter);
+                state.listenInputLetters.push(letter);
+                renderWordSlots();
+                speakText(letter);
+            }
+        }
+
+        function resetListenInput() {
+            playChimeSound('pop');
+            state.listenInputLetters = [];
+            renderWordSlots();
+            speakText('Hapus pilihan');
+        }
+
+        function checkListenAnswer() {
+            const currentAnswer = state.listenInputLetters.join('');
+            if (currentAnswer.length < state.targetWordListen.length) {
+                speakText('Lengkapi semua hurufnya dulu ya!');
+                return;
+            }
+
+            if (currentAnswer === state.targetWordListen) {
+                playChimeSound('success');
+                const msg = `Luar biasa ${state.childName}! Jawabanmu benar: ${state.targetWordListen}`;
+                showFeedbackModal('🎉', 'Benar Sekali!', msg);
+                speakText(msg);
+            } else {
+                playChimeSound('pop');
+                speakText(`Kurang tepat, kata yang benar adalah ${state.targetWordListen}. Coba lagi ya!`);
+            }
+        }
+
+        let canvas, ctx;
+        let isDrawing = false;
+
+        function initTulisCanvas() {
+            canvas = document.getElementById('drawingCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Resize canvas to parent container
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#22c55e';
+
+            clearCanvas();
+            updateTracingTargetDisplay();
+
+            // Setup Mouse Events
+            canvas.onmousedown = startDrawing;
+            canvas.onmousemove = drawStroke;
+            canvas.onmouseup = stopDrawing;
+
+            // Setup Touch Events
+            canvas.ontouchstart = (e) => {
+                e.preventDefault();
+                startDrawing(e.touches[0]);
+            };
+            canvas.ontouchmove = (e) => {
+                e.preventDefault();
+                drawStroke(e.touches[0]);
+            };
+            canvas.ontouchend = stopDrawing;
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            playChimeSound('pencil');
+        }
+
+        function drawStroke(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            if (Math.random() < 0.2) playChimeSound('pencil');
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function setBrushColor(color) {
+            playChimeSound('pop');
+            if (ctx) ctx.strokeStyle = color;
+        }
+
+        function clearCanvas() {
+            playChimeSound('pop');
+            if (ctx && canvas) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Draw dotted guide background
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function updateTracingTargetDisplay() {
+            const targetWord = state.tracingTargets[state.tracingTargetIndex];
+            document.getElementById('tracingTargetText').innerText = targetWord;
+        }
+
+        function changeTracingTarget(dir) {
+            playChimeSound('pop');
+            state.tracingTargetIndex = (state.tracingTargetIndex + dir + state.tracingTargets.length) % state.tracingTargets.length;
+            updateTracingTargetDisplay();
+            clearCanvas();
+            playTracingTargetWordSound();
+        }
+
+        function playTracingTargetWordSound() {
+            const word = state.tracingTargets[state.tracingTargetIndex];
+            speakText(`Tulis kata: ${word}`);
+        }
+
+        function finishCanvasWriting() {
+            playChimeSound('success');
+            const word = state.tracingTargets[state.tracingTargetIndex];
+            const msg = `MasyaAllah ${state.childName}, tulisan kata ${word} sangat bagus!`;
+            showFeedbackModal('🎨', 'Bagus Sekali!', msg);
+            speakText(msg);
+        }
+
+        function setWordCategory(cat) {
+            playChimeSound('pop');
+            state.currentCategory = cat;
+            state.currentWordIndex = 0;
+
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = 'cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200';
+            });
+            event.target.className = 'cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500';
+
+            renderCurrentWordBoard();
+            speakText(`Kategori kata ${cat.replace('kata_', '')}`);
+        }
+
+        function renderCurrentWordBoard() {
+            const item = wordDatabase[state.currentCategory][state.currentWordIndex];
+            document.getElementById('fullWordDisplay').innerText = item.word;
+
+            const syllableContainer = document.getElementById('syllableContainer');
+            syllableContainer.innerHTML = '';
+
+            item.syllables.forEach((syl) => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-sky-100 hover:bg-sky-200 text-sky-800 px-4 py-2 rounded-2xl border-2 border-sky-300 font-fredoka font-black shadow-sm btn-bounce';
+                btn.innerText = syl;
+                btn.onclick = () => {
+                    playChimeSound('pop');
+                    speakText(syl);
+                };
+                syllableContainer.appendChild(btn);
+            });
+        }
+
+        function prevWord() {
+            playChimeSound('pop');
+            const list = wordDatabase[state.currentCategory];
+            state.currentWordIndex = (state.currentWordIndex - 1 + list.length) % list.length;
+            renderCurrentWordBoard();
+            playFullWordDirect();
+        }
+
+        function nextWord() {
+            playChimeSound('pop');
+            const list = wordDatabase[state.currentCategory];
+            state.currentWordIndex = (state.currentWordIndex + 1) % list.length;
+            renderCurrentWordBoard();
+            playFullWordDirect();
+        }
+
+        function playSyllableStepByStep() {
+            const item = wordDatabase[state.currentCategory][state.currentWordIndex];
+            const word = item.word;
+            const syllables = item.syllables;
+
+            // Spell syllables sequentially
+            let ejaPhrase = syllables.join(' ... ');
+            speakText(`Eja suku kata: ${ejaPhrase} ... Dibaca: ${word}`);
+        }
+
+        function playFullWordDirect() {
+            const item = wordDatabase[state.currentCategory][state.currentWordIndex];
+            speakText(item.word);
+        }
+
+        function playDoaAudio(doaType) {
+            playChimeSound('pop');
+
+            const doaSounds = {
+                'sebelum_belajar': 'Doa sebelum belajar: Rabbi zidnii \'ilman warzuqnii fahman. Ya Allah, tambahkanlah aku ilmu dan berilah aku rezeki pemahaman.',
+                'sesudah_belajar': 'Doa sesudah belajar: Alhamdulillahirabbil \'aalamiin. Segala puji bagi Allah, Tuhan semesta alam.',
+                'orang_tua': 'Doa untuk orang tua: Rabbighfirlii waliwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa. Ya Allah ampunilah aku dan kedua orang tuaku.'
+            };
+
+            if (doaSounds[doaType]) {
+                speakText(doaSounds[doaType]);
+            }
+        }
+
+        let mathA, mathB, mathAnsCorrect;
+
+        function openParentModal() {
+            playChimeSound('pop');
+            mathA = Math.floor(Math.random() * 5) + 2;
+            mathB = Math.floor(Math.random() * 5) + 1;
+            mathAnsCorrect = mathA + mathB;
+
+            document.getElementById('mathQ').innerText = `${mathA} + ${mathB}`;
+            document.getElementById('mathAns').value = '';
+            document.getElementById('parentGateChallenge').classList.remove('hidden');
+            document.getElementById('parentSettings').classList.add('hidden');
+            document.getElementById('parentModal').classList.remove('hidden');
+        }
+
+        function closeParentModal() {
+            document.getElementById('parentModal').classList.add('hidden');
+        }
+
+        function verifyParentGate() {
+            const inputAns = parseInt(document.getElementById('mathAns').value);
+            if (inputAns === mathAnsCorrect) {
+                playChimeSound('success');
+                document.getElementById('parentGateChallenge').classList.add('hidden');
+                document.getElementById('parentSettings').classList.remove('hidden');
+                document.getElementById('parentChildNameInput').value = state.childName;
+                renderCustomWordsList();
+            } else {
+                speakText('Jawaban verifikasi salah. Coba lagi!');
+            }
+        }
+
+        function updateSpeechSettings() {
+            state.speechRate = parseFloat(document.getElementById('speechRateRange').value);
+            state.speechPitch = parseFloat(document.getElementById('speechPitchRange').value);
+        }
+
+        function saveParentSettings() {
+            const newName = document.getElementById('parentChildNameInput').value.trim();
+            if (newName) {
+                state.childName = newName;
+                document.getElementById('headerChildName').innerText = newName;
+                document.getElementById('dashChildName').innerText = newName;
+            }
+            updateSpeechSettings();
+            closeParentModal();
+            speakText(`Pengaturan berhasil disimpan untuk ${state.childName}`);
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            // Pre-warm Speech Synthesis
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
+            }
+        };
+    </script>
+</body>
+</html>

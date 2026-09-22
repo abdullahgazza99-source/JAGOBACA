@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Baca Cepat- Belajar Membaca & Audio Interaktif</title>
+    <title>Baca Cepat - Belajar Membaca & Audio Interaktif</title>
     
     <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="manifest.json">
@@ -116,6 +116,14 @@
             opacity: 0.25;
             z-index: 0;
         }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
@@ -160,8 +168,8 @@
     <header class="p-3 bg-white/95 backdrop-blur-md border-b-4 border-amber-300 flex items-center justify-between z-20 shrink-0 shadow-sm">
         <div class="flex items-center gap-2">
             <!-- Profile Avatar Button -->
-            <button onclick="navigateTo('home')" class="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 px-3 py-1.5 rounded-2xl border-2 border-amber-400 transition-all btn-bounce shadow-sm">
-                <div class="w-9 h-9 rounded-full bg-sunny-300 border-2 border-white shadow-sm shrink-0 overflow-hidden flex items-center justify-center">
+            <button onclick="navigateTo('home')" class="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-amber-200 hover:from-amber-200 hover:to-amber-300 px-2.5 py-1.5 rounded-2xl border-2 border-amber-400 transition-all btn-bounce shadow-sm">
+                <div class="w-8 h-8 rounded-full bg-sunny-300 border-2 border-white shadow-sm shrink-0 overflow-hidden flex items-center justify-center">
                     <img id="headerAvatarImg" class="w-full h-full object-cover hidden" alt="Profile Avatar" />
                     <svg id="headerAvatarSvg" class="w-full h-full" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="45" fill="#fde047" />
@@ -173,21 +181,26 @@
                     </svg>
                 </div>
                 <div class="text-left">
-                    <span id="headerChildName" class="font-fredoka font-black text-sm text-amber-900 block max-w-[90px] truncate leading-none">Anak Soleh</span>
-                    <span class="text-[9px] font-bold text-amber-600 uppercase tracking-wider">🏠 Beranda</span>
+                    <span id="headerChildName" class="font-fredoka font-black text-xs text-amber-900 block max-w-[80px] truncate leading-none">Anak Soleh</span>
+                    <span class="text-[8px] font-bold text-amber-600 uppercase tracking-wider">🏠 Beranda</span>
                 </div>
             </button>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
+            <!-- FITUR 1: TOMBOL KAPITAL / HURUF KECIL (BERLAKU DI SEMUA MODE) -->
+            <button id="caseToggleBtn" onclick="toggleCaseMode()" class="bg-purple-500 hover:bg-purple-600 text-white w-9 h-9 rounded-2xl flex items-center justify-center font-fredoka font-black text-sm btn-toy border-b-4 border-purple-700 shadow-sm" title="Ganti Huruf Besar/Kecil">
+                <span id="caseToggleLabel">a/A</span>
+            </button>
+
             <!-- Global Audio Indicator Button -->
-            <button id="globalAudioBtn" onclick="speakText('Suara audio aktif!')" class="bg-amber-300 hover:bg-amber-400 text-amber-900 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm btn-toy border-b-4 border-amber-500" title="Audio Suara Aktif">
+            <button id="globalAudioBtn" onclick="speakText('Suara audio aktif!')" class="bg-amber-300 hover:bg-amber-400 text-amber-900 w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-sm btn-toy border-b-4 border-amber-500" title="Audio Suara Aktif">
                 <i class="fa-solid fa-volume-high" id="speakerIcon"></i>
             </button>
-            <button id="btnHome" onclick="navigateTo('home')" class="hidden bg-candy-cyan hover:bg-cyan-600 text-white w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-md btn-toy border-b-4 border-cyan-700">
-                <i class="fa-solid fa-house text-lg"></i>
+            <button id="btnHome" onclick="navigateTo('home')" class="hidden bg-candy-cyan hover:bg-cyan-600 text-white w-9 h-9 rounded-2xl flex items-center justify-center font-bold shadow-md btn-toy border-b-4 border-cyan-700">
+                <i class="fa-solid fa-house text-sm"></i>
             </button>
-            <button onclick="openParentModal()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs btn-toy border-b-4 border-amber-400">
+            <button onclick="openParentModal()" class="bg-amber-200 hover:bg-amber-300 text-amber-900 w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs btn-toy border-b-4 border-amber-400">
                 <i class="fa-solid fa-gear"></i>
             </button>
         </div>
@@ -267,7 +280,7 @@
                 <button onclick="navigateTo('alfabet')" class="bg-gradient-to-b from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white rounded-3xl p-3.5 shadow-md border-b-4 border-sky-700 flex flex-col items-center justify-center gap-1 btn-toy">
                     <span class="text-3xl">⌨️</span>
                     <span class="font-fredoka font-black text-base tracking-wide">KEYPAD & HURUF</span>
-                    <span class="text-[10px] bg-white/30 px-2 py-0.5 rounded-full font-extrabold">Suara Tiap Ketik</span>
+                    <span class="text-[10px] bg-white/30 px-2 py-0.5 rounded-full font-extrabold">Suara Tiap Ketik & Spasi</span>
                 </button>
 
                 <button onclick="navigateTo('dengarkan')" class="bg-gradient-to-b from-candy-pink to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-3xl p-3.5 shadow-md border-b-4 border-pink-800 flex flex-col items-center justify-center gap-1 btn-toy">
@@ -285,7 +298,7 @@
                 <button onclick="navigateTo('baca')" class="bg-gradient-to-b from-sunny-300 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 rounded-3xl p-3.5 shadow-md border-b-4 border-amber-600 flex flex-col items-center justify-center gap-1 btn-toy">
                     <span class="text-3xl">📖</span>
                     <span class="font-fredoka font-black text-base tracking-wide">BACA & EJA</span>
-                    <span class="text-[10px] bg-black/15 px-2 py-0.5 rounded-full font-extrabold">Suara Mengeja</span>
+                    <span class="text-[10px] bg-black/15 px-2 py-0.5 rounded-full font-extrabold">Scroll Awalan/Akhiran</span>
                 </button>
 
                 <button onclick="navigateTo('doa')" class="col-span-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-3xl p-3 shadow-md border-b-4 border-purple-800 flex items-center justify-center gap-3 btn-toy">
@@ -305,15 +318,16 @@
         <!-- VIEW: ALFABET & KEYPAD NUMBER INTERACTIVE -->
         <section id="viewAlfabet" class="hidden h-full flex flex-col justify-between gap-1.5">
             <!-- Assembled Word & Audio Controls -->
-            <div class="flex-1 bg-white rounded-3xl p-3 border-4 border-sky-300 shadow-md text-center flex flex-col items-center justify-center relative overflow-hidden min-h-[140px] gap-2">
-                <div class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-widest">KATA / ANGKA TERKETIK:</div>
-                <span id="alphabetDisplayBig" class="text-4xl md:text-6xl font-fredoka font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 pop-in tracking-wider break-all max-w-full px-2">A</span>
+            <div class="flex-1 bg-white rounded-3xl p-3 border-4 border-sky-300 shadow-md text-center flex flex-col items-center justify-center relative overflow-hidden min-h-[120px] gap-2">
+                <div class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-widest">KATA / KALIMAT TERKETIK:</div>
+                <span id="alphabetDisplayBig" class="text-3xl md:text-5xl font-fredoka font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 pop-in tracking-wider break-all max-w-full px-2">A</span>
                 
                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                   
-                    </button>
                     <button onclick="speakAssembledWord()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 px-3.5 py-1 rounded-full text-xs font-fredoka font-bold flex items-center gap-1 btn-toy border-b-2 border-lime-600">
                         <i class="fa-solid fa-volume-high"></i> Baca Kata
+                    </button>
+                    <button onclick="ejaWordDetailed()" class="bg-sunny-400 hover:bg-amber-400 text-slate-900 px-3 py-1 rounded-full text-xs font-fredoka font-bold flex items-center gap-1 btn-toy border-b-2 border-amber-600">
+                        <i class="fa-solid fa-spell-check"></i> Eja
                     </button>
                     <button onclick="clearAssembledWord()" class="bg-rose-400 hover:bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-fredoka font-bold flex items-center gap-1 btn-toy border-b-2 border-rose-600">
                         <i class="fa-solid fa-trash"></i> Hapus
@@ -323,8 +337,8 @@
 
             <!-- Tab Switcher: Keypad Angka vs Alfabet Huruf -->
             <div class="flex gap-1">
-                <button id="tabHurufBtn" onclick="switchKeypadTab('huruf')" class="flex-1 bg-sky-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-sky-700">🔤 Keypad Huruf (A-Z)</button>
-                <button id="tabAngkaBtn" onclick="switchKeypadTab('angka')" class="flex-1 bg-amber-200 text-amber-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-amber-300">🔢 Keypad Angka (0-9)</button>
+                <button id="tabHurufBtn" onclick="switchKeypadTab('huruf')" class="flex-1 bg-sky-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-sky-700">🔤 Keypad Huruf</button>
+                <button id="tabAngkaBtn" onclick="switchKeypadTab('angka')" class="flex-1 bg-amber-200 text-amber-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-amber-300">🔢 Keypad Angka</button>
             </div>
 
             <!-- Keyboard Layout Container -->
@@ -333,6 +347,14 @@
                 <div id="alphabetGrid" class="grid grid-cols-6 gap-1"></div>
                 <!-- Number Keypad Grid -->
                 <div id="numberGrid" class="hidden grid grid-cols-3 gap-2 max-w-xs mx-auto"></div>
+                
+                <!-- FITUR 2: TOMBOL SPASI UNTUK KEYBOARD -->
+                <div class="mt-1.5">
+                    <button onclick="selectKeypadKey(' ')" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-fredoka font-black py-2 rounded-xl border-b-4 border-slate-400 shadow-sm btn-toy flex items-center justify-center gap-2 text-sm">
+                        <i class="fa-solid fa-arrows-left-right-to-line"></i>
+                        <span>SPASI</span>
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -356,8 +378,8 @@
             </div>
 
             <div class="bg-white rounded-3xl p-3 border-4 border-slate-200 text-center space-y-1 shadow-inner">
-                <p class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-wider">SUKU/HURUF DIPILIH:</p>
-                <div id="wordSlots" class="flex items-center justify-center gap-2 min-h-[48px] flex-wrap">
+                <p class="text-[10px] font-fredoka font-black text-slate-400 uppercase tracking-wider">HURUF DIPILIH:</p>
+                <div id="wordSlots" class="flex items-center justify-center gap-1.5 min-h-[48px] flex-wrap">
                     <!-- Slots dynamic -->
                 </div>
             </div>
@@ -366,12 +388,17 @@
                 <!-- Dynamic Letter Keys -->
             </div>
 
+            <!-- SPASI PADA MODE SUSUN KATA DENGARKAN -->
+            <button onclick="chooseListenLetter(' ')" class="w-full bg-amber-200 hover:bg-amber-300 text-amber-900 font-fredoka font-black py-1.5 rounded-xl border-b-2 border-amber-400 text-xs btn-toy">
+                ⎵ TAMBAH SPASI
+            </button>
+
             <div class="flex gap-2">
                 <button onclick="resetListenInput()" class="w-1/3 bg-slate-300 text-slate-800 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-slate-400">
                     🗑 HAPUS
                 </button>
                 <button onclick="checkListenAnswer()" class="w-2/3 bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-2.5 rounded-2xl text-sm shadow-md btn-toy border-b-4 border-lime-600">
-                    ✓ EJA & PERIKSA
+                    ✓ PERIKSA JAWABAN
                 </button>
             </div>
         </section>
@@ -414,42 +441,99 @@
             </div>
         </section>
 
-        <!-- VIEW: BACA KATA & SUARA MENGEJA -->
+        <!-- VIEW: BACA KATA & SUARA MENGEJA (DENGAN FITUR SCROLL PASANGAN) -->
         <section id="viewBaca" class="hidden h-full flex flex-col justify-between gap-2">
-            <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
-                <button onclick="setWordCategory('kata_mudah')" class="cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500">Kata Utama</button>
-                <button onclick="setWordCategory('kata_sehari')" class="cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200">Sehari-hari</button>
-                <button onclick="setWordCategory('kata_islami')" class="cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200">Kata Islami</button>
+            <!-- Mode Switcher: Mode Kata vs Mode Scroll Pasangan Suku Kata -->
+            <div class="flex gap-1 overflow-x-auto pb-1 text-xs hide-scrollbar">
+                <button id="modeNormalBtn" onclick="switchBacaSubMode('normal')" class="cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500">📖 Mode Kata</button>
+                <button id="modeScrollBtn" onclick="switchBacaSubMode('scroll')" class="cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200">🔄 Scroll Awalan/Akhiran</button>
             </div>
 
-            <div class="bg-white rounded-3xl p-4 border-4 border-sunny-300 shadow-lg text-center flex flex-col items-center justify-center flex-1 my-1 relative">
-                <div id="syllableContainer" class="flex items-center gap-2 text-3xl md:text-4xl font-fredoka font-black text-slate-800 tracking-wider flex-wrap justify-center">
-                    <!-- Dynamic Interactive Syllable Cards -->
+            <!-- SUB MODE 1: KATA BIASA -->
+            <div id="subModeBacaNormal" class="flex-1 flex flex-col justify-between gap-2">
+                <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
+                    <button onclick="setWordCategory('kata_mudah')" class="cat-sub-btn bg-sky-400 text-white px-2.5 py-1 rounded-xl font-fredoka font-bold shrink-0">Kata Utama</button>
+                    <button onclick="setWordCategory('kata_sehari')" class="cat-sub-btn bg-white text-slate-600 px-2.5 py-1 rounded-xl font-bold shrink-0 border border-slate-200">Sehari-hari</button>
+                    <button onclick="setWordCategory('kata_kalimat')" class="cat-sub-btn bg-white text-slate-600 px-2.5 py-1 rounded-xl font-bold shrink-0 border border-slate-200">2 Kata / Kalimat</button>
+                    <button onclick="setWordCategory('kata_islami')" class="cat-sub-btn bg-white text-slate-600 px-2.5 py-1 rounded-xl font-bold shrink-0 border border-slate-200">Kata Islami</button>
                 </div>
 
-                <div id="fullWordDisplay" class="text-4xl md:text-5xl font-fredoka font-black text-candy-pink mt-3 pop-in">
-                    BOLA
+                <div class="bg-white rounded-3xl p-4 border-4 border-sunny-300 shadow-lg text-center flex flex-col items-center justify-center flex-1 my-1 relative">
+                    <div id="syllableContainer" class="flex items-center gap-2 text-3xl md:text-4xl font-fredoka font-black text-slate-800 tracking-wider flex-wrap justify-center">
+                        <!-- Dynamic Interactive Syllable Cards -->
+                    </div>
+
+                    <div id="fullWordDisplay" class="text-3xl md:text-5xl font-fredoka font-black text-candy-pink mt-3 pop-in break-words">
+                        BOLA
+                    </div>
+
+                    <div class="flex items-center gap-2 mt-3">
+                        <button onclick="playSyllableStepByStep()" class="bg-sunny-400 hover:bg-sunny-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-amber-600 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-spell-check text-sm"></i>
+                            <span>SUARA MENGEJA</span>
+                        </button>
+                        <button onclick="playFullWordDirect()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-lime-600 text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-volume-high text-sm"></i>
+                            <span>BACA UTUH</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-2 mt-3">
-                    <button onclick="playSyllableStepByStep()" class="bg-sunny-400 hover:bg-sunny-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-amber-600 text-xs flex items-center gap-1.5">
-                        <i class="fa-solid fa-spell-check text-sm"></i>
-                        <span>SUARA MENGEJA</span>
+                <div class="flex items-center justify-between gap-2">
+                    <button onclick="prevWord()" class="flex-1 bg-amber-200 hover:bg-amber-300 text-amber-900 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-amber-400 flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-arrow-left"></i> SEBELUMNYA
                     </button>
-                    <button onclick="playFullWordDirect()" class="bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black px-4 py-2 rounded-2xl shadow-md btn-toy border-b-4 border-lime-600 text-xs flex items-center gap-1.5">
-                        <i class="fa-solid fa-volume-high text-sm"></i>
-                        <span>BACA UTUH</span>
+                    <button onclick="nextWord()" class="flex-1 bg-candy-pink hover:bg-pink-600 text-white font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-pink-700 flex items-center justify-center gap-1">
+                        BERIKUTNYA <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between gap-2">
-                <button onclick="prevWord()" class="flex-1 bg-amber-200 hover:bg-amber-300 text-amber-900 font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-amber-400 flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-arrow-left"></i> SEBELUMNYA
-                </button>
-                <button onclick="nextWord()" class="flex-1 bg-candy-pink hover:bg-pink-600 text-white font-fredoka font-black py-2.5 rounded-2xl text-xs btn-toy border-b-4 border-pink-700 flex items-center justify-center gap-1">
-                    BERIKUTNYA <i class="fa-solid fa-arrow-right"></i>
-                </button>
+            <!-- FITUR 3: SUB MODE 2: SCROLL GANTI AWALAN ATAU AKHIRAN (PASANGAN SUKU KATA) -->
+            <div id="subModeBacaScroll" class="hidden flex-1 flex flex-col justify-between gap-2">
+                <div class="bg-amber-100 p-2 rounded-2xl border-2 border-amber-300 text-center">
+                    <p class="text-xs font-fredoka font-black text-amber-900">🔄 GANTI AWALAN & AKHIRAN SUKU KATA</p>
+                    <p class="text-[10px] text-slate-600 font-bold">Tekan panah atau scroll suku kata untuk memasangkan!</p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-3 border-4 border-sky-300 shadow-md flex items-center justify-center gap-3 flex-1 my-auto">
+                    <!-- Column Awalan -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[9px] font-fredoka font-black text-sky-600 uppercase">Scroll Awalan</span>
+                        <button onclick="scrollSyllable('awalan', -1)" class="w-10 h-8 bg-sky-200 text-sky-900 rounded-xl font-bold btn-toy flex items-center justify-center"><i class="fa-solid fa-chevron-up"></i></button>
+                        <div id="displayAwalan" class="w-20 h-16 bg-sky-500 text-white text-2xl font-fredoka font-black rounded-2xl flex items-center justify-center border-b-4 border-sky-700 shadow-sm pop-in">
+                            BA
+                        </div>
+                        <button onclick="scrollSyllable('awalan', 1)" class="w-10 h-8 bg-sky-200 text-sky-900 rounded-xl font-bold btn-toy flex items-center justify-center"><i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+
+                    <span class="text-2xl font-black text-amber-400 animate-pulse">-</span>
+
+                    <!-- Column Akhiran -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-[9px] font-fredoka font-black text-pink-600 uppercase">Scroll Akhiran</span>
+                        <button onclick="scrollSyllable('akhiran', -1)" class="w-10 h-8 bg-pink-200 text-pink-900 rounded-xl font-bold btn-toy flex items-center justify-center"><i class="fa-solid fa-chevron-up"></i></button>
+                        <div id="displayAkhiran" class="w-20 h-16 bg-pink-500 text-white text-2xl font-fredoka font-black rounded-2xl flex items-center justify-center border-b-4 border-pink-700 shadow-sm pop-in">
+                            CA
+                        </div>
+                        <button onclick="scrollSyllable('akhiran', 1)" class="w-10 h-8 bg-pink-200 text-pink-900 rounded-xl font-bold btn-toy flex items-center justify-center"><i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 p-3 rounded-2xl border-2 border-amber-300 text-center space-y-2">
+                    <div class="text-[10px] font-bold text-slate-500">HASIL PASANGAN KATA:</div>
+                    <div id="pairedResultWord" class="text-3xl font-fredoka font-black text-purple-600 tracking-wider">
+                        BACA
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="playPairedEja()" class="flex-1 bg-sunny-400 hover:bg-sunny-500 text-slate-900 font-fredoka font-black py-2 rounded-xl text-xs btn-toy border-b-2 border-amber-600 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-spell-check"></i> Eja Pasangan
+                        </button>
+                        <button onclick="playPairedDirect()" class="flex-1 bg-candy-lime hover:bg-lime-500 text-slate-900 font-fredoka font-black py-2 rounded-xl text-xs btn-toy border-b-2 border-lime-600 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-volume-high"></i> Baca Pasangan
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -584,7 +668,52 @@
             listenInputLetters: [],
             tracingTargetIndex: 0,
             tracingTargets: ['MATA', 'BOLA', 'IBU', 'AYAH', 'SAPI', 'NASI', 'BUKU', 'RUMAH'],
-            customWords: []
+            customWords: [],
+            
+            // FITUR 1: Capital Letter Toggle Mode
+            isUpperCase: true, // true = KAPITAL (A), false = Kecil (a)
+            
+            // FITUR 3: Scroll Awalan / Akhiran Pairs State
+          // FITUR 3: Scroll Awalan / Akhiran Pairs State
+
+  awalanList: [
+    // Kelompok A
+    'BA', 'CA', 'DA', 'FA', 'GA', 'HA', 'JA', 'KA', 'LA', 'MA', 'NA', 'PA', 'QA', 'RA', 'SA', 'TA', 'VA', 'WA', 'YA', 'ZA',
+    // Kelompok I
+    'BI', 'CI', 'DI', 'FI', 'GI', 'HI', 'JI', 'KI', 'LI', 'MI', 'NI', 'PI', 'QI', 'RI', 'SI', 'TI', 'VI', 'WI', 'YI', 'ZI',
+    // Kelompok U
+    'BU', 'CU', 'DU', 'FU', 'GU', 'HU', 'JU', 'KU', 'LU', 'MU', 'NU', 'PU', 'QU', 'RU', 'SU', 'TU', 'VU', 'WU', 'YU', 'ZU',
+    // Kelompok E
+    'BE', 'CE', 'DE', 'FE', 'GE', 'HE', 'JE', 'KE', 'LE', 'ME', 'NE', 'PE', 'QE', 'RE', 'SE', 'TE', 'VE', 'WE', 'YE', 'ZE',
+    // Kelompok O
+    'BO', 'CO', 'DO', 'FO', 'GO', 'HO', 'JO', 'KO', 'LO', 'MO', 'NO', 'PO', 'QO', 'RO', 'SO', 'TO', 'VO', 'WO', 'YO', 'ZO'
+  ],
+  
+  akhiranList: [
+    // Kelompok A
+    'BA', 'CA', 'DA', 'FA', 'GA', 'HA', 'JA', 'KA', 'LA', 'MA', 'NA', 'PA', 'QA', 'RA', 'SA', 'TA', 'VA', 'WA', 'YA', 'ZA',
+    // Kelompok I
+    'BI', 'CI', 'DI', 'FI', 'GI', 'HI', 'JI', 'KI', 'LI', 'MI', 'NI', 'PI', 'QI', 'RI', 'SI', 'TI', 'VI', 'WI', 'YI', 'ZI',
+    // Kelompok U
+    'BU', 'CU', 'DU', 'FU', 'GU', 'HU', 'JU', 'KU', 'LU', 'MU', 'NU', 'PU', 'QU', 'RU', 'SU', 'TU', 'VU', 'WU', 'YU', 'ZU',
+    // Kelompok E
+    'BE', 'CE', 'DE', 'FE', 'GE', 'HE', 'JE', 'KE', 'LE', 'ME', 'NE', 'PE', 'QE', 'RE', 'SE', 'TE', 'VE', 'WE', 'YE', 'ZE',
+    // Kelompok O
+    'BO', 'CO', 'DO', 'FO', 'GO', 'HO', 'JO', 'KO', 'LO', 'MO', 'NO', 'PO', 'QO', 'RO', 'SO', 'TO', 'VO', 'WO', 'YO', 'ZO',
+    
+    // Kelompok Akhiran 3 Huruf (Konsonan + Vokal + Konsonan)
+    'KUS', 'TAS', 'PUS', 'KAS', 'BUS', 'TIS', 'DUN', 'DIT', ' RAT', 'RUT', 
+    'MUT', 'RAN', 'MAN', 'TAN', 'LAN', 'KAN', 'BAN', 'WAN', 'SAN', 'PAN',
+    'MIN', 'LIN', 'SIN', 'TIN', 'RIN', 'RUN', 'BUN', 'TUN', 'SUN', 'LUN',
+    'TOK', 'ROK', 'DOK', 'POK', 'BAK', 'CAK', 'DAK', 'LAK', 'MAK', 'SAK',
+    'SIK', 'TIK', 'RIK', 'LIK', 'MIK', 'BUK', 'CUK', 'DUK', 'LUK', 'MUK',
+    'LAH', 'RAH', 'MAH', 'TAH', 'GAH', 'LIH', 'RIH', 'SIH', 'TIH', 'NIH',
+    'LUH', 'RUH', 'MUH', 'TUH', 'JUH', 'REK', 'BEK', 'CEK', 'LEK', 'TEK'
+  ],
+  
+  currentAwalanIndex: 0,
+  currentAkhiranIndex: 0
+
         };
 
         // Pronunciation mapping for digits in Indonesian
@@ -624,6 +753,12 @@
                 { word: 'SEPATU', syllables: ['SE', 'PA', 'TU'] },
                 { word: 'AIR', syllables: ['A', 'IR'] }
             ],
+            kata_kalimat: [
+                { word: 'IBU BACA BUKU', syllables: ['I', 'BU', ' ', 'BA', 'CA', ' ', 'BU', 'KU'] },
+                { word: 'SAPI MAKAN RUMPUT', syllables: ['SA', 'PI', ' ', 'MA', 'KAN', ' ', 'RUM', 'PUT'] },
+                { word: 'BAPA BELI ROTI', syllables: ['BA', 'PA', ' ', 'BE', 'LI', ' ', 'RO', 'TI'] },
+                { word: 'ADIK BACA DO A', syllables: ['A', 'DIK', ' ', 'BA', 'CA', ' ', 'DO', 'A'] }
+            ],
             kata_islami: [
                 { word: 'ALLAH', syllables: ['AL', 'LAH'] },
                 { word: 'MASJID', syllables: ['MAS', 'JID'] },
@@ -642,7 +777,6 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPwaPrompt = e;
-            // Show PWA install modal if not installed
             setTimeout(() => {
                 const pwaModal = document.getElementById('pwaInstallModal');
                 if (pwaModal) pwaModal.classList.remove('hidden');
@@ -663,6 +797,47 @@
 
         function closePwaModal() {
             document.getElementById('pwaInstallModal').classList.add('hidden');
+        }
+
+        // FITUR 1: FUNCTION TOGGLE CASE MODE (A / a)
+        function toggleCaseMode() {
+            state.isUpperCase = !state.isUpperCase;
+            const label = document.getElementById('caseToggleLabel');
+            if (label) {
+                label.innerText = state.isUpperCase ? 'A/a' : 'a/A';
+            }
+
+            playChimeSound('pop');
+            speakText(state.isUpperCase ? 'Mode Huruf Besar' : 'Mode Huruf Kecil');
+
+            // Refresh UI components according to case
+            applyCaseToUI();
+        }
+
+        function formatTextCase(text) {
+            if (!text) return text;
+            return state.isUpperCase ? text.toUpperCase() : text.toLowerCase();
+        }
+
+        function applyCaseToUI() {
+            // Update Alfabet display if active
+            if (state.currentView === 'alfabet') {
+                renderAlphabetGrid();
+                const bigDisp = document.getElementById('alphabetDisplayBig');
+                if (bigDisp && state.assembledWord) {
+                    bigDisp.innerText = formatTextCase(state.assembledWord);
+                }
+            }
+            // Update Dengarkan options if active
+            if (state.currentView === 'dengarkan') {
+                renderWordSlots();
+                renderListenOptions();
+            }
+            // Update Baca mode if active
+            if (state.currentView === 'baca') {
+                renderCurrentWordBoard();
+                updatePairedDisplay();
+            }
         }
 
         // Web Audio Synthesizer for Keypad Tones, Clicks and Chimes
@@ -687,7 +862,6 @@
                 osc.connect(gain);
                 gain.connect(ctx.destination);
 
-                // Map key to a musical frequency
                 let freq = 400;
                 if (!isNaN(key)) {
                     freq = 300 + parseInt(key) * 40;
@@ -837,7 +1011,7 @@
 
         function addCustomWordFromSettings() {
             const input = document.getElementById('customWordInput');
-            const val = input.value.trim().toUpperCase().replace(/[^A-Z]/g, '');
+            const val = input.value.trim().toUpperCase();
             if (!val) return;
 
             if (state.customWords.includes(val)) {
@@ -848,7 +1022,6 @@
             state.customWords.push(val);
             input.value = '';
 
-            // Add to database
             const syllables = autoSyllableSplit(val);
             wordDatabase.kata_mudah.unshift({ word: val, syllables: syllables });
 
@@ -881,7 +1054,7 @@
             state.customWords.forEach(w => {
                 const badge = document.createElement('span');
                 badge.className = 'bg-amber-200 text-amber-900 font-fredoka font-black px-2 py-0.5 rounded-lg flex items-center gap-1 text-[11px]';
-                badge.innerHTML = `${w} <button onclick="deleteCustomWord('${w}')" class="text-rose-600 hover:text-rose-800 font-black">&times;</button>`;
+                badge.innerHTML = `${formatTextCase(w)} <button onclick="deleteCustomWord('${w}')" class="text-rose-600 hover:text-rose-800 font-black">&times;</button>`;
                 container.appendChild(badge);
             });
         }
@@ -910,7 +1083,6 @@
                 registerActivityStep();
             }
 
-            // Announce current view via TTS
             const announcements = {
                 'alfabet': 'Mode Keypad dan Huruf. Tekan tombol untuk mendengar suara!',
                 'dengarkan': 'Mode Dengarkan dan Tulis!',
@@ -926,7 +1098,10 @@
             if (viewId === 'alfabet') initAlphabetView();
             if (viewId === 'dengarkan') initDengarkanView();
             if (viewId === 'tulis') initTulisCanvas();
-            if (viewId === 'baca') renderCurrentWordBoard();
+            if (viewId === 'baca') {
+                renderCurrentWordBoard();
+                updatePairedDisplay();
+            }
         }
 
         function registerActivityStep() {
@@ -959,7 +1134,6 @@
 
         function closeFeedbackModal() {
             document.getElementById('feedbackModal').classList.add('hidden');
-            // Otomatis ganti ke soal berikutnya pada mode dengarkan
             if (state.currentView === 'dengarkan') {
                 initDengarkanView();
             }
@@ -999,13 +1173,13 @@
                 tabAngkaBtn.className = 'flex-1 bg-amber-200 text-amber-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-amber-300';
                 alphabetGrid.classList.remove('hidden');
                 numberGrid.classList.add('hidden');
-                speakText('Keypad Huruf A sampai Z');
+                speakText('Keypad Huruf');
             } else {
                 tabHurufBtn.className = 'flex-1 bg-sky-200 text-sky-900 font-fredoka font-bold py-1.5 rounded-xl text-xs border-b-2 border-sky-300';
                 tabAngkaBtn.className = 'flex-1 bg-amber-500 text-white font-fredoka font-black py-1.5 rounded-xl text-xs border-b-2 border-amber-700';
                 alphabetGrid.classList.add('hidden');
                 numberGrid.classList.remove('hidden');
-                speakText('Keypad Angka Nol sampai Sembilan');
+                speakText('Keypad Angka');
             }
         }
 
@@ -1027,8 +1201,8 @@
             alphabet.forEach((letter, idx) => {
                 const colorClass = colorPalette[idx % colorPalette.length];
                 const btn = document.createElement('button');
-                btn.className = `${colorClass} font-fredoka font-black text-lg py-2 rounded-xl border-b-4 shadow-sm btn-toy flex items-center justify-center`;
-                btn.innerText = letter;
+                btn.className = `${colorClass} font-fredoka font-black text-lg py-1.5 rounded-xl border-b-4 shadow-sm btn-toy flex items-center justify-center`;
+                btn.innerText = formatTextCase(letter);
                 btn.onclick = () => selectKeypadKey(letter);
                 grid.appendChild(btn);
             });
@@ -1041,7 +1215,7 @@
             const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
             numbers.forEach((num) => {
                 const btn = document.createElement('button');
-                btn.className = 'bg-gradient-to-b from-sunny-300 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-fredoka font-black text-2xl py-3 rounded-2xl border-b-4 border-amber-600 shadow-md btn-toy flex flex-col items-center justify-center';
+                btn.className = 'bg-gradient-to-b from-sunny-300 to-amber-400 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-fredoka font-black text-xl py-2.5 rounded-2xl border-b-4 border-amber-600 shadow-md btn-toy flex flex-col items-center justify-center';
                 btn.innerHTML = `<span>${num}</span><span class="text-[9px] font-bold text-amber-900">${numberSpeechMap[num]}</span>`;
                 btn.onclick = () => selectKeypadKey(num);
                 grid.appendChild(btn);
@@ -1051,20 +1225,24 @@
         function selectKeypadKey(key) {
             playKeypadPitch(key);
 
-            if (state.assembledWord.length >= 12) {
-                state.assembledWord = key;
+            if (key === ' ') {
+                state.assembledWord += ' ';
+                speakText('Spasi');
             } else {
-                state.assembledWord += key;
+                if (state.assembledWord.length >= 25) {
+                    state.assembledWord = key;
+                } else {
+                    state.assembledWord += key;
+                }
+
+                if (numberSpeechMap[key]) {
+                    speakText(numberSpeechMap[key]);
+                } else {
+                    speakText(formatTextCase(key));
+                }
             }
 
-            document.getElementById('alphabetDisplayBig').innerText = state.assembledWord;
-
-            // Immediate speech for the key pressed
-            if (numberSpeechMap[key]) {
-                speakText(numberSpeechMap[key]);
-            } else {
-                speakText(key);
-            }
+            document.getElementById('alphabetDisplayBig').innerText = formatTextCase(state.assembledWord) || '-';
         }
 
         function clearAssembledWord() {
@@ -1089,10 +1267,12 @@
             let speechParts = [];
 
             chars.forEach(c => {
-                if (numberSpeechMap[c]) {
+                if (c === ' ') {
+                    speechParts.push('Spasi');
+                } else if (numberSpeechMap[c]) {
                     speechParts.push(numberSpeechMap[c]);
                 } else {
-                    speechParts.push(c);
+                    speechParts.push(formatTextCase(c));
                 }
             });
 
@@ -1101,7 +1281,6 @@
         }
 
         function initDengarkanView() {
-            // Select random word from current category (berbeda dari soal sebelumnya)
             const list = wordDatabase[state.currentCategory];
             let randomIndex;
             if (list.length > 1) {
@@ -1134,8 +1313,8 @@
             for (let i = 0; i < len; i++) {
                 const char = state.listenInputLetters[i] || '';
                 const box = document.createElement('div');
-                box.className = 'w-10 h-10 md:w-12 md:h-12 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center font-fredoka font-black text-xl text-pink-600 shadow-inner pop-in';
-                box.innerText = char;
+                box.className = 'w-9 h-9 md:w-11 md:h-11 bg-amber-50 border-2 border-amber-300 rounded-xl flex items-center justify-center font-fredoka font-black text-lg text-pink-600 shadow-inner pop-in';
+                box.innerText = formatTextCase(char);
                 container.appendChild(box);
             }
         }
@@ -1144,8 +1323,7 @@
             const container = document.getElementById('listenLetterOptions');
             container.innerHTML = '';
 
-            // Generate letters including target letters
-            const targetChars = state.targetWordListen.split('');
+            const targetChars = state.targetWordListen.replace(/\s/g, '').split('');
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
             const randomExtras = alphabet.filter(c => !targetChars.includes(c)).sort(() => 0.5 - Math.random()).slice(0, 14 - targetChars.length);
             
@@ -1153,8 +1331,8 @@
 
             allOptionLetters.forEach(letter => {
                 const btn = document.createElement('button');
-                btn.className = 'bg-white hover:bg-sky-100 text-slate-800 font-fredoka font-black text-base py-2 rounded-xl border-2 border-amber-300 shadow-sm btn-bounce';
-                btn.innerText = letter;
+                btn.className = 'bg-white hover:bg-sky-100 text-slate-800 font-fredoka font-black text-base py-1.5 rounded-xl border-2 border-amber-300 shadow-sm btn-bounce';
+                btn.innerText = formatTextCase(letter);
                 btn.onclick = () => chooseListenLetter(letter);
                 container.appendChild(btn);
             });
@@ -1162,10 +1340,15 @@
 
         function chooseListenLetter(letter) {
             if (state.listenInputLetters.length < state.targetWordListen.length) {
-                playKeypadPitch(letter);
+                if (letter === ' ') {
+                    playChimeSound('pop');
+                    speakText('Spasi');
+                } else {
+                    playKeypadPitch(letter);
+                    speakText(formatTextCase(letter));
+                }
                 state.listenInputLetters.push(letter);
                 renderWordSlots();
-                speakText(letter);
             }
         }
 
@@ -1201,7 +1384,6 @@
             canvas = document.getElementById('drawingCanvas');
             ctx = canvas.getContext('2d');
 
-            // Resize canvas to parent container
             const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
@@ -1214,12 +1396,10 @@
             clearCanvas();
             updateTracingTargetDisplay();
 
-            // Setup Mouse Events
             canvas.onmousedown = startDrawing;
             canvas.onmousemove = drawStroke;
             canvas.onmouseup = stopDrawing;
 
-            // Setup Touch Events
             canvas.ontouchstart = (e) => {
                 e.preventDefault();
                 startDrawing(e.touches[0]);
@@ -1260,7 +1440,6 @@
             playChimeSound('pop');
             if (ctx && canvas) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                // Draw dotted guide background
                 ctx.fillStyle = '#f8fafc';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
@@ -1268,7 +1447,7 @@
 
         function updateTracingTargetDisplay() {
             const targetWord = state.tracingTargets[state.tracingTargetIndex];
-            document.getElementById('tracingTargetText').innerText = targetWord;
+            document.getElementById('tracingTargetText').innerText = formatTextCase(targetWord);
         }
 
         function changeTracingTarget(dir) {
@@ -1292,15 +1471,39 @@
             speakText(msg);
         }
 
+        // FITUR 3: BACA & EJA SUB MODE SWITCHER (MODE KATA VS MODE SCROLL PASANGAN)
+        function switchBacaSubMode(subMode) {
+            playChimeSound('pop');
+            const modeNormalBtn = document.getElementById('modeNormalBtn');
+            const modeScrollBtn = document.getElementById('modeScrollBtn');
+            const subModeNormal = document.getElementById('subModeBacaNormal');
+            const subModeScroll = document.getElementById('subModeBacaScroll');
+
+            if (subMode === 'normal') {
+                modeNormalBtn.className = 'cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500';
+                modeScrollBtn.className = 'cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200';
+                subModeNormal.classList.remove('hidden');
+                subModeScroll.classList.add('hidden');
+                speakText('Mode Kata');
+            } else {
+                modeNormalBtn.className = 'cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200';
+                modeScrollBtn.className = 'cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500';
+                subModeNormal.classList.add('hidden');
+                subModeScroll.classList.remove('hidden');
+                updatePairedDisplay();
+                speakText('Mode Scroll Awalan dan Akhiran Suku Kata');
+            }
+        }
+
         function setWordCategory(cat) {
             playChimeSound('pop');
             state.currentCategory = cat;
             state.currentWordIndex = 0;
 
-            document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.className = 'cat-btn bg-white text-slate-600 px-3 py-1.5 rounded-xl font-bold shrink-0 border border-slate-200';
+            document.querySelectorAll('.cat-sub-btn').forEach(btn => {
+                btn.className = 'cat-sub-btn bg-white text-slate-600 px-2.5 py-1 rounded-xl font-bold shrink-0 border border-slate-200';
             });
-            event.target.className = 'cat-btn bg-sunny-400 text-slate-900 px-3 py-1.5 rounded-xl font-fredoka font-black shrink-0 border-2 border-amber-500';
+            event.target.className = 'cat-sub-btn bg-sky-400 text-white px-2.5 py-1 rounded-xl font-fredoka font-bold shrink-0';
 
             renderCurrentWordBoard();
             speakText(`Kategori kata ${cat.replace('kata_', '')}`);
@@ -1308,20 +1511,26 @@
 
         function renderCurrentWordBoard() {
             const item = wordDatabase[state.currentCategory][state.currentWordIndex];
-            document.getElementById('fullWordDisplay').innerText = item.word;
+            document.getElementById('fullWordDisplay').innerText = formatTextCase(item.word);
 
             const syllableContainer = document.getElementById('syllableContainer');
             syllableContainer.innerHTML = '';
 
             item.syllables.forEach((syl) => {
-                const btn = document.createElement('button');
-                btn.className = 'bg-sky-100 hover:bg-sky-200 text-sky-800 px-4 py-2 rounded-2xl border-2 border-sky-300 font-fredoka font-black shadow-sm btn-bounce';
-                btn.innerText = syl;
-                btn.onclick = () => {
-                    playChimeSound('pop');
-                    speakText(syl);
-                };
-                syllableContainer.appendChild(btn);
+                if (syl === ' ') {
+                    const spaceBox = document.createElement('div');
+                    spaceBox.className = 'w-4 h-8';
+                    syllableContainer.appendChild(spaceBox);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = 'bg-sky-100 hover:bg-sky-200 text-sky-800 px-3.5 py-1.5 rounded-2xl border-2 border-sky-300 font-fredoka font-black shadow-sm btn-bounce text-2xl md:text-3xl';
+                    btn.innerText = formatTextCase(syl);
+                    btn.onclick = () => {
+                        playChimeSound('pop');
+                        speakText(syl);
+                    };
+                    syllableContainer.appendChild(btn);
+                }
             });
         }
 
@@ -1344,16 +1553,54 @@
         function playSyllableStepByStep() {
             const item = wordDatabase[state.currentCategory][state.currentWordIndex];
             const word = item.word;
-            const syllables = item.syllables;
+            const syllables = item.syllables.filter(s => s !== ' ');
 
-            // Spell syllables sequentially
             let ejaPhrase = syllables.join(' ... ');
-            speakText(`Yuk dieja: ${ejaPhrase} ... Dibaca: ${word}`);
+            speakText(`yuk dieja: ${ejaPhrase} ... Dibaca: ${word}`);
         }
 
         function playFullWordDirect() {
             const item = wordDatabase[state.currentCategory][state.currentWordIndex];
             speakText(item.word);
+        }
+
+        // FITUR 3: FUNCTIONS SCROLL AWALAN ATAU AKHIRAN
+        function scrollSyllable(type, dir) {
+            playChimeSound('pop');
+            if (type === 'awalan') {
+                state.currentAwalanIndex = (state.currentAwalanIndex + dir + state.awalanList.length) % state.awalanList.length;
+            } else if (type === 'akhiran') {
+                state.currentAkhiranIndex = (state.currentAkhiranIndex + dir + state.akhiranList.length) % state.akhiranList.length;
+            }
+            updatePairedDisplay();
+
+            // Speak selected syllable directly
+            const currentSyl = type === 'awalan' ? state.awalanList[state.currentAwalanIndex] : state.akhiranList[state.currentAkhiranIndex];
+            speakText(currentSyl);
+        }
+
+        function updatePairedDisplay() {
+            const awalan = state.awalanList[state.currentAwalanIndex];
+            const akhiran = state.akhiranList[state.currentAkhiranIndex];
+            const resultWord = awalan + akhiran;
+
+            document.getElementById('displayAwalan').innerText = formatTextCase(awalan);
+            document.getElementById('displayAkhiran').innerText = formatTextCase(akhiran);
+            document.getElementById('pairedResultWord').innerText = formatTextCase(resultWord);
+        }
+
+        function playPairedEja() {
+            const awalan = state.awalanList[state.currentAwalanIndex];
+            const akhiran = state.akhiranList[state.currentAkhiranIndex];
+            const resultWord = awalan + akhiran;
+
+            speakText(`${awalan} ... ${akhiran} ... dibaca: ${resultWord}`);
+        }
+
+        function playPairedDirect() {
+            const awalan = state.awalanList[state.currentAwalanIndex];
+            const akhiran = state.akhiranList[state.currentAkhiranIndex];
+            speakText(awalan + akhiran);
         }
 
         function playDoaAudio(doaType) {
@@ -1421,7 +1668,6 @@
 
         // Initialize App on Window Load
         window.onload = function() {
-            // Pre-warm Speech Synthesis
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.getVoices();
             }
